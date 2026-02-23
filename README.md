@@ -24,6 +24,8 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 
 ## Quick Start
 
+> See the [live demo](https://antoniu86.github.io/porphyry.js/demo.html) to explore all features interactively.
+
 ```html
 <!-- 1. Include the library -->
 <script src="porphyry.js"></script>
@@ -105,7 +107,7 @@ new Porphyry(selector, options)
 | `layout` | `"auto"` | Direction mode: `"auto"`, `"left"`, `"right"`, `"down"`, or `"up"`. |
 | `fitPadding` | `20` | Pixels of padding when auto-fitting to the container. |
 | `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
-| `spacing` | `"normal"` | Spacing preset: `"crowded"` (×0.33), `"normal"` (×1), or `"wide"` (×1.67). Applied as a multiplier on top of all spacing values, before depth-adaptive scaling. |
+| `spacing` | `1` | Spacing multiplier applied to all node distances before depth-adaptive scaling. Accepts any value from `0.1` (extremely compact) to `2.0` (very spread out). `1` is the default. |
 
 ### Spacing — horizontal layouts
 

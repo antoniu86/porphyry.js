@@ -148,24 +148,40 @@
 
     .separator { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
 
-    .spacing-select {
-      appearance: none;
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 4px 26px 4px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-      cursor: pointer;
-      font-family: inherit;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      transition: border-color 0.15s;
+    .spacing-wrap {
+      display: flex; align-items: center; gap: 7px;
     }
-    .spacing-select:hover { border-color: var(--accent); }
-    .spacing-select:focus { outline: none; border-color: var(--accent); }
+    .spacing-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px; height: 4px;
+      border-radius: 2px;
+      background: var(--border);
+      cursor: pointer;
+      outline: none;
+      accent-color: var(--accent);
+    }
+    .spacing-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .spacing-slider::-moz-range-thumb {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .spacing-value {
+      font-size: 12px; font-weight: 600;
+      color: var(--text); min-width: 30px; text-align: left;
+    }
 
     .interact-toggle {
       display: flex;
@@ -567,11 +583,12 @@
     </label>
     <div class="separator"></div>
     <span style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px">SPACING</span>
-    <select class="spacing-select" id="spacing-select" onchange="setSpacing(this.value)">
-      <option value="crowded">Crowded</option>
-      <option value="normal" selected>Normal</option>
-      <option value="wide">Wide</option>
-    </select>
+    <div class="spacing-wrap">
+      <input type="range" class="spacing-slider" id="spacing-slider"
+        min="0.1" max="2.0" step="0.1" value="1.0"
+        oninput="setSpacing(this.value)">
+      <span class="spacing-value" id="spacing-value">1.0×</span>
+    </div>
     <div class="separator"></div>
     <a class="btn" href="https://github.com/antoniu86/porphyry.js" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -638,6 +655,9 @@
     <!-- Quick Start -->
     <div class="docs-section">
       <h2>Quick Start</h2>
+      <div class="callout" style="margin-bottom:18px">
+        Want to see it in action first? Check out the <a href="/demo.html" target="_blank" rel="noopener noreferrer" style="color:var(--accent);font-weight:600">live demo →</a>
+      </div>
       <p>Drop a single script tag on the page. No bundler, no npm, no build step required.</p>
 <pre><span class="cm">&lt;!-- 1. Include the library --&gt;</span>
 <span class="kw">&lt;script</span> src=<span class="st">"porphyry.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
@@ -711,7 +731,7 @@
         <tr><td>layout</td><td>"auto"</td><td>Direction mode. One of <code>"auto"</code>, <code>"left"</code>, <code>"right"</code>, <code>"down"</code>, <code>"up"</code>. See Layout Modes below.</td></tr>
         <tr><td>fitPadding</td><td>20</td><td>Pixels of padding around the graph when auto-fitting to the container.</td></tr>
         <tr><td>lineHeight</td><td>1.45</td><td>Line height multiplier for wrapped text.</td></tr>
-        <tr><td>spacing</td><td>"normal"</td><td>Spacing preset: <code>"crowded"</code> (×0.33), <code>"normal"</code> (×1), or <code>"wide"</code> (×1.67). Scales all node distances together, before depth-adaptive scaling.</td></tr>
+        <tr><td>spacing</td><td>1</td><td>Spacing multiplier applied to all node distances before depth-adaptive scaling. Any value from <code>0.1</code> (extremely compact) to <code>2.0</code> (very spread out). <code>1</code> is the default.</td></tr>
       </table>
 
       <h3>Spacing (horizontal layouts)</h3>
@@ -896,7 +916,7 @@ map.<span class="fn">_rebindInteractions</span>();</pre>
 
 <footer>Created by <a href="https://github.com/antoniu86" target="_blank" rel="noopener noreferrer">antoniu</a></footer>
 
-<script src="porphyry.js"></script>
+<script src="porphyry.min.js"></script>
 <script>
 // ── Example datasets ───────────────────────────────────────────────────────
 
@@ -1349,8 +1369,10 @@ function applyJSON() {
 function showError(msg) { document.getElementById('json-error').textContent = msg; }
 function clearError()   { document.getElementById('json-error').textContent = ''; }
 
-function setSpacing(mode) {
-  mm.options.spacing = mode;
+function setSpacing(val) {
+  const v = parseFloat(val);
+  mm.options.spacing = v;
+  document.getElementById('spacing-value').textContent = v.toFixed(1) + '×';
   mm._renderInternal(true);
 }
 
