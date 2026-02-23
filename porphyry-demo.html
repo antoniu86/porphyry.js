@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Porphyry.js — Demo</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%231A1F2E'/%3E%3Ccircle cx='14' cy='14' r='3.5' fill='%23fff'/%3E%3Ccircle cx='14' cy='4.5' r='2' fill='%234A90D9'/%3E%3Ccircle cx='14' cy='23.5' r='2' fill='%23E05C5C'/%3E%3Ccircle cx='4.5' cy='14' r='2' fill='%234CAF82'/%3E%3Ccircle cx='23.5' cy='14' r='2' fill='%23F0883E'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.6' fill='%238B6FD4'/%3E%3Ccircle cx='21.5' cy='6.5' r='1.6' fill='%23D4A017'/%3E%3Ccircle cx='6.5' cy='21.5' r='1.6' fill='%235BB8A0'/%3E%3Ccircle cx='21.5' cy='21.5' r='1.6' fill='%23D46FAB'/%3E%3Cline x1='14' y1='10.5' x2='14' y2='6.5' stroke='%234A90D9' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='14' y1='17.5' x2='14' y2='21.5' stroke='%23E05C5C' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='10.5' y1='14' x2='6.5' y2='14' stroke='%234CAF82' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='17.5' y1='14' x2='21.5' y2='14' stroke='%23F0883E' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='11' y1='11' x2='8' y2='8' stroke='%238B6FD4' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='17' y1='11' x2='20' y2='8' stroke='%23D4A017' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='11' y1='17' x2='8' y2='20' stroke='%235BB8A0' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='17' y1='17' x2='20' y2='20' stroke='%23D46FAB' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F7F8FC;
+      --panel-bg: #FFFFFF;
+      --border: #E2E8F0;
+      --text: #1A202C;
+      --muted: #718096;
+      --accent: #4A90D9;
+      --radius: 10px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      height: 56px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 17px;
+      letter-spacing: -0.3px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+    }
+
+    .badge {
+      background: #EBF4FF;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Tab Nav ── */
+    .tab-nav {
+      display: flex;
+      gap: 2px;
+      margin-left: 8px;
+    }
+
+    .tab-btn {
+      padding: 5px 14px;
+      border: none;
+      border-radius: 7px;
+      background: none;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .tab-btn:hover { color: var(--text); background: var(--bg); }
+    .tab-btn.active { background: #EBF4FF; color: var(--accent); }
+
+    /* ── Controls ── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--panel-bg);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn:hover { background: #F0F4FF; border-color: var(--accent); color: var(--accent); }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary:hover { background: #3A7CC5; border-color: #3A7CC5; color: #fff; }
+
+    .layout-toggle {
+      display: flex;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .toggle-btn {
+      padding: 4px 11px;
+      border: none;
+      border-radius: 6px;
+      background: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .toggle-btn:hover { color: var(--text); background: var(--panel-bg); }
+    .toggle-btn.active { background: var(--panel-bg); color: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+    .separator { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+
+    .interact-toggle {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .interact-toggle input { accent-color: var(--accent); cursor: pointer; }
+    .interact-toggle:hover { color: var(--text); }
+
+    /* ── Layout ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 300px;
+      flex-shrink: 0;
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-header {
+      padding: 14px 16px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .examples {
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .example-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      background: none;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .example-btn:hover { background: #F0F4FF; color: var(--accent); }
+    .example-btn.active { background: #EBF4FF; border-color: #BDD7F5; color: var(--accent); }
+
+    .example-btn small {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .json-editor-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+    }
+
+    .json-editor-label {
+      padding: 10px 16px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    textarea#json-editor {
+      flex: 1;
+      resize: none;
+      border: none;
+      outline: none;
+      padding: 10px 16px;
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      font-size: 11.5px;
+      line-height: 1.6;
+      color: #2D3748;
+      background: #FAFBFE;
+      border-top: 1px solid var(--border);
+    }
+
+    .json-error {
+      padding: 8px 16px;
+      font-size: 12px;
+      color: #E53E3E;
+      background: #FFF5F5;
+      border-top: 1px solid #FED7D7;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+    }
+
+    .apply-btn {
+      margin: 10px;
+      padding: 9px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .apply-btn:hover { background: #3A7CC5; }
+
+    /* ── Canvas area ── */
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #EFF3FB 0%, #F7F8FC 70%);
+    }
+
+    /* Subtle dot grid */
+    .canvas-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #CBD5E0 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    #porphyry-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    /* ── Docs Panel ── */
+    .docs-panel {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      background: var(--bg);
+      padding: 48px 0 80px;
+    }
+
+    .docs-panel.active { display: block; }
+    .workspace.hidden  { display: none; }
+
+    .docs-content {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .docs-hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .docs-hero-text h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+
+    .docs-hero-text p {
+      margin-top: 6px;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .docs-hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .docs-section {
+      margin-bottom: 44px;
+    }
+
+    .docs-section h2 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .docs-section h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 20px 0 8px;
+    }
+
+    .docs-section p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #4A5568;
+      margin-bottom: 12px;
+    }
+
+    .docs-section ul {
+      padding-left: 18px;
+      margin-bottom: 12px;
+    }
+
+    .docs-section li {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #4A5568;
+      margin-bottom: 4px;
+    }
+
+    pre {
+      background: #1A1F2E;
+      color: #E2E8F0;
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 12px 0 20px;
+      position: relative;
+    }
+
+    pre .cm  { color: #68D391; }   /* comment — green */
+    pre .kw  { color: #76E4F7; }   /* keyword — cyan */
+    pre .st  { color: #FBD38D; }   /* string — amber */
+    pre .nm  { color: #B794F4; }   /* number/bool — violet */
+    pre .fn  { color: #90CDF4; }   /* function name — blue */
+    pre .ky  { color: #FC8181; }   /* key — red */
+
+    code {
+      background: #EBF4FF;
+      color: #2B6CB0;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      font-size: 12.5px;
+    }
+
+    .prop-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0 20px;
+    }
+
+    .prop-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: #F0F4FF;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .prop-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+      color: #4A5568;
+    }
+
+    .prop-table td:first-child {
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      color: #2B6CB0;
+      white-space: nowrap;
+    }
+
+    .prop-table td:nth-child(2) {
+      color: #805AD5;
+      font-family: 'SF Mono', 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .prop-table tr:last-child td { border-bottom: none; }
+    .prop-table tr:hover td { background: #FAFBFE; }
+
+    .callout {
+      background: #EBF4FF;
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      font-size: 13.5px;
+      color: #2C5282;
+      line-height: 1.6;
+      margin: 12px 0 20px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-left">
+    <div class="logo">
+      <svg class="logo-icon" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="5" fill="#1A1F2E"/>
+        <circle cx="14" cy="4"  r="2.5" fill="#4A90D9"/>
+        <circle cx="14" cy="24" r="2.5" fill="#E05C5C"/>
+        <circle cx="4"  cy="14" r="2.5" fill="#4CAF82"/>
+        <circle cx="24" cy="14" r="2.5" fill="#F0883E"/>
+        <circle cx="6"  cy="6"  r="2"   fill="#8B6FD4"/>
+        <circle cx="22" cy="6"  r="2"   fill="#D4A017"/>
+        <line x1="14" y1="9"  x2="14" y2="6.5"  stroke="#4A90D9" stroke-width="1.5"/>
+        <line x1="14" y1="19" x2="14" y2="21.5" stroke="#E05C5C" stroke-width="1.5"/>
+        <line x1="9"  y1="14" x2="6.5"  y2="14" stroke="#4CAF82" stroke-width="1.5"/>
+        <line x1="19" y1="14" x2="21.5" y2="14" stroke="#F0883E" stroke-width="1.5"/>
+      </svg>
+      Porphyry.js
+    </div>
+    <span class="badge">v1.4.0</span>
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="demo">Demo</button>
+      <button class="tab-btn"        data-tab="docs">Docs</button>
+    </nav>
+  </div>
+
+  <div class="controls">
+    <span style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px">LAYOUT</span>
+    <div class="layout-toggle" id="layout-toggle">
+      <button class="toggle-btn active" data-layout="auto" title="Balanced left & right">⇔ Auto</button>
+      <button class="toggle-btn" data-layout="left"  title="All branches left">← Left</button>
+      <button class="toggle-btn" data-layout="right" title="All branches right">Right →</button>
+      <button class="toggle-btn" data-layout="down"  title="Tree grows downward">↓ Down</button>
+      <button class="toggle-btn" data-layout="up"    title="Tree grows upward">↑ Up</button>
+    </div>
+    <div class="separator"></div>
+    <label class="interact-toggle">
+      <input type="checkbox" id="toggle-pan"  checked onchange="setInteraction()"> Pan
+    </label>
+    <label class="interact-toggle">
+      <input type="checkbox" id="toggle-zoom" checked onchange="setInteraction()"> Zoom
+    </label>
+    <div class="separator"></div>
+    <div class="separator"></div>
+    <button class="btn" onclick="window.open('porphyry.js')">↓ Download</button>
+  </div>
+</header>
+
+<!-- ── Workspace ── -->
+<div class="workspace">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">Examples</div>
+    <div class="examples" id="examples-list"></div>
+
+    <div class="json-editor-wrap">
+      <div class="json-editor-label">JSON Data</div>
+      <textarea id="json-editor" spellcheck="false"></textarea>
+      <div class="json-error" id="json-error"></div>
+      <button class="apply-btn" onclick="applyJSON()">Apply →</button>
+    </div>
+  </aside>
+
+  <!-- Canvas -->
+  <div class="canvas-wrap">
+    <div id="porphyry-container"></div>
+  </div>
+</div>
+
+<!-- ── Docs Panel ── -->
+<div class="docs-panel" id="docs-panel">
+  <div class="docs-content">
+
+    <!-- Hero -->
+    <div class="docs-hero">
+      <svg width="52" height="52" viewBox="0 0 28 28" fill="none" style="flex-shrink:0">
+        <rect width="28" height="28" rx="7" fill="#1A1F2E"/>
+        <circle cx="14" cy="14" r="3.5" fill="#fff"/>
+        <circle cx="14" cy="4.5" r="2" fill="#4A90D9"/>
+        <circle cx="14" cy="23.5" r="2" fill="#E05C5C"/>
+        <circle cx="4.5" cy="14" r="2" fill="#4CAF82"/>
+        <circle cx="23.5" cy="14" r="2" fill="#F0883E"/>
+        <circle cx="6.5" cy="6.5" r="1.6" fill="#8B6FD4"/>
+        <circle cx="21.5" cy="6.5" r="1.6" fill="#D4A017"/>
+        <line x1="14" y1="10.5" x2="14" y2="6.5" stroke="#4A90D9" stroke-width="1.3" stroke-linecap="round"/>
+        <line x1="14" y1="17.5" x2="14" y2="21.5" stroke="#E05C5C" stroke-width="1.3" stroke-linecap="round"/>
+        <line x1="10.5" y1="14" x2="6.5" y2="14" stroke="#4CAF82" stroke-width="1.3" stroke-linecap="round"/>
+        <line x1="17.5" y1="14" x2="21.5" y2="14" stroke="#F0883E" stroke-width="1.3" stroke-linecap="round"/>
+        <line x1="11" y1="11" x2="8" y2="8" stroke="#8B6FD4" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="17" y1="11" x2="20" y2="8" stroke="#D4A017" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <div class="docs-hero-text">
+        <h1>Porphyry.js</h1>
+        <p>A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG. Named after Porphyry of Tyre, the ancient philosopher who introduced the hierarchical <em>tree of categories</em>.</p>
+        <div class="docs-hero-badge">
+          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.0</span>
+          <span style="background:#F0FFF4;color:#276749;padding:2px 8px;border-radius:99px">Zero dependencies</span>
+          <span style="background:#FAF5FF;color:#553C9A;padding:2px 8px;border-radius:99px">SVG-based</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="docs-section">
+      <h2>Quick Start</h2>
+      <p>Drop a single script tag on the page. No bundler, no npm, no build step required.</p>
+<pre><span class="cm">&lt;!-- 1. Include the library --&gt;</span>
+<span class="kw">&lt;script</span> src=<span class="st">"porphyry.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+
+<span class="cm">&lt;!-- 2. Give it a container --&gt;</span>
+<span class="kw">&lt;div</span> id=<span class="st">"map"</span> style=<span class="st">"width:100%;height:500px"</span><span class="kw">&gt;&lt;/div&gt;</span>
+
+<span class="cm">&lt;!-- 3. Initialize and render --&gt;</span>
+<span class="kw">&lt;script&gt;</span>
+  <span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>);
+  map.<span class="fn">render</span>({
+    topic: <span class="st">'My Topic'</span>,
+    children: [
+      { topic: <span class="st">'Branch A'</span> },
+      { topic: <span class="st">'Branch B'</span>, children: [
+        { topic: <span class="st">'Sub-node'</span> }
+      ]}
+    ]
+  });
+<span class="kw">&lt;/script&gt;</span></pre>
+      <div class="callout">The container must have an explicit <code>width</code> and <code>height</code> — Porphyry fills 100% of it. Set these via CSS or inline styles.</div>
+    </div>
+
+    <!-- Data Format -->
+    <div class="docs-section">
+      <h2>Data Format</h2>
+      <p>Porphyry accepts a plain JSON object. Every node has a <code>topic</code> and an optional <code>children</code> array. Nesting can go as deep as needed.</p>
+<pre>{
+  <span class="ky">topic</span>: <span class="st">"Root Subject"</span>,           <span class="cm">// required — label text</span>
+  <span class="ky">url</span>:   <span class="st">"https://example.com"</span>,   <span class="cm">// optional — makes node clickable</span>
+  <span class="ky">direction</span>: <span class="st">"left"</span>,              <span class="cm">// optional — "left"|"right", auto otherwise</span>
+  <span class="ky">children</span>: [
+    {
+      <span class="ky">topic</span>: <span class="st">"First branch"</span>,
+      <span class="ky">children</span>: [
+        { <span class="ky">topic</span>: <span class="st">"Leaf node"</span> },
+        { <span class="ky">topic</span>: <span class="st">"Linked leaf"</span>, <span class="ky">url</span>: <span class="st">"https://..."</span> }
+      ]
+    },
+    { <span class="ky">topic</span>: <span class="st">"Second branch"</span> }
+  ]
+}</pre>
+      <h3>Node fields</h3>
+      <table class="prop-table">
+        <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        <tr><td>topic</td><td>string</td><td>Node label. Long text wraps automatically within the configured max width.</td></tr>
+        <tr><td>url</td><td>string?</td><td>If present, the node becomes clickable and opens this URL in a new tab. A small ↗ icon appears inside the node.</td></tr>
+        <tr><td>direction</td><td>"left"|"right"?</td><td>Pin a root-level child to a specific side. Only respected on direct children of the root in horizontal layouts. Ignored in vertical layouts.</td></tr>
+        <tr><td>children</td><td>Node[]?</td><td>Child nodes. Omit or leave empty for leaf nodes.</td></tr>
+      </table>
+    </div>
+
+    <!-- Constructor -->
+    <div class="docs-section">
+      <h2>Constructor</h2>
+<pre><span class="kw">new</span> <span class="fn">Porphyry</span>(selector, options)</pre>
+      <table class="prop-table">
+        <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+        <tr><td>selector</td><td>string | Element</td><td>A CSS selector string or a DOM element to render into.</td></tr>
+        <tr><td>options</td><td>object?</td><td>Optional configuration. See Options reference below.</td></tr>
+      </table>
+    </div>
+
+    <!-- Options -->
+    <div class="docs-section">
+      <h2>Options Reference</h2>
+
+      <h3>Layout</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>layout</td><td>"auto"</td><td>Direction mode. One of <code>"auto"</code>, <code>"left"</code>, <code>"right"</code>, <code>"down"</code>, <code>"up"</code>. See Layout Modes below.</td></tr>
+        <tr><td>fitPadding</td><td>64</td><td>Pixels of padding around the graph when auto-fitting to the container.</td></tr>
+        <tr><td>lineHeight</td><td>1.45</td><td>Line height multiplier for wrapped text.</td></tr>
+      </table>
+
+      <h3>Spacing (horizontal layouts)</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>branchSpacingX</td><td>220</td><td>Horizontal gap (px) between the center node and depth-1 branches. Scales down automatically for deep trees.</td></tr>
+        <tr><td>subSpacingX</td><td>170</td><td>Horizontal gap (px) between sub-levels (depth ≥ 2). Also auto-scales.</td></tr>
+        <tr><td>verticalSpacing</td><td>50</td><td>Minimum vertical gap (px) between sibling nodes.</td></tr>
+      </table>
+
+      <h3>Spacing (vertical layouts)</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>verticalSpacingY</td><td>60</td><td>Vertical gap (px) between depth levels in <code>up</code>/<code>down</code> layouts.</td></tr>
+        <tr><td>horizontalSpacing</td><td>30</td><td>Horizontal gap (px) between sibling subtrees in vertical layouts.</td></tr>
+      </table>
+
+      <h3>Center node</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>center.fontSize</td><td>17</td><td></td></tr>
+        <tr><td>center.paddingX / paddingY</td><td>28 / 16</td><td></td></tr>
+        <tr><td>center.maxWidth</td><td>240</td><td>Max node width (px) before text wraps to next line.</td></tr>
+        <tr><td>center.radius</td><td>12</td><td>Corner radius of the center node rectangle.</td></tr>
+        <tr><td>center.fill</td><td>"#1A1F2E"</td><td>Background color.</td></tr>
+        <tr><td>center.color</td><td>"#FFFFFF"</td><td>Text color.</td></tr>
+      </table>
+
+      <h3>Branch nodes (depth 1)</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>branch.fontSize</td><td>14</td><td></td></tr>
+        <tr><td>branch.paddingX / paddingY</td><td>18 / 10</td><td></td></tr>
+        <tr><td>branch.maxWidth</td><td>200</td><td>Max node width (px) before text wraps.</td></tr>
+        <tr><td>branch.color</td><td>"#FFFFFF"</td><td>Text color (fill comes from the color palette).</td></tr>
+      </table>
+
+      <h3>Leaf nodes (depth ≥ 2)</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>leaf.fontSize</td><td>13</td><td></td></tr>
+        <tr><td>leaf.paddingX / paddingY</td><td>10 / 7</td><td></td></tr>
+        <tr><td>leaf.maxWidth</td><td>170</td><td>Max node width (px) before text wraps.</td></tr>
+        <tr><td>leaf.color</td><td>"#2D3748"</td><td>Text color.</td></tr>
+      </table>
+
+      <h3>Colors &amp; edges</h3>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>colors</td><td>10-color palette</td><td>Array of hex color strings. Each root branch is assigned one in order; descendants inherit it.</td></tr>
+        <tr><td>edgeWidth.root</td><td>2.5</td><td>Stroke width of edges leaving the center node.</td></tr>
+        <tr><td>edgeWidth.branch</td><td>2</td><td>Stroke width of depth-1 → depth-2 edges.</td></tr>
+        <tr><td>edgeWidth.leaf</td><td>1.5</td><td>Stroke width of deeper edges.</td></tr>
+        <tr><td>edgeOpacity</td><td>0.85</td><td>Global opacity of all edges.</td></tr>
+      </table>
+
+      <h3>Interactions</h3>
+      <p>All interactions are <strong>off by default</strong> for clean embedding. Opt in explicitly to what you need.</p>
+      <table class="prop-table">
+        <tr><th>Option</th><th>Default</th><th>Description</th></tr>
+        <tr><td>interactions.pan</td><td>false</td><td>Enable drag-to-pan (mouse + touch).</td></tr>
+        <tr><td>interactions.zoom</td><td>false</td><td>Enable scroll-wheel zoom and pinch-to-zoom.</td></tr>
+        <tr><td>interactions.hud</td><td>false</td><td>Inject a zoom HUD (−, level %, +, fit) into the bottom-right of the container.</td></tr>
+        <tr><td>interactions.tips</td><td>false</td><td>Inject a hint bar at the bottom-center describing active interactions.</td></tr>
+        <tr><td>minZoom</td><td>0.08</td><td>Minimum zoom scale (when zoom is enabled).</td></tr>
+        <tr><td>maxZoom</td><td>4</td><td>Maximum zoom scale (when zoom is enabled).</td></tr>
+        <tr><td>zoomSensitivity</td><td>0.12</td><td>Scroll-wheel zoom speed per tick.</td></tr>
+      </table>
+    </div>
+
+    <!-- Layout Modes -->
+    <div class="docs-section">
+      <h2>Layout Modes</h2>
+      <p>Set via <code>options.layout</code> at init time, or by mutating <code>instance.options.layout</code> before calling <code>render()</code> again.</p>
+      <table class="prop-table">
+        <tr><th>Value</th><th>Description</th></tr>
+        <tr><td>"auto"</td><td>Branches are distributed evenly left and right of the center node. Explicit <code>direction</code> fields in node data are honoured first; the remainder are balanced.</td></tr>
+        <tr><td>"left"</td><td>All branches grow to the left. Node <code>direction</code> fields are ignored.</td></tr>
+        <tr><td>"right"</td><td>All branches grow to the right. Node <code>direction</code> fields are ignored.</td></tr>
+        <tr><td>"down"</td><td>Tree grows downward. Siblings spread horizontally. All nodes use the outlined button style.</td></tr>
+        <tr><td>"up"</td><td>Tree grows upward. Siblings spread horizontally. All nodes use the outlined button style.</td></tr>
+      </table>
+      <div class="callout">In <code>"down"</code> and <code>"up"</code> modes all nodes — including the center and branches — use an <em>outlined button</em> style (white fill, colored border) instead of the solid-fill styles used in horizontal layouts.</div>
+    </div>
+
+    <!-- Methods -->
+    <div class="docs-section">
+      <h2>Methods</h2>
+      <table class="prop-table">
+        <tr><th>Method</th><th>Description</th></tr>
+        <tr><td>render(data)</td><td>Parse <code>data</code>, lay out the tree, and draw it. Clears any previous render. Automatically calls <code>fit()</code> after the first paint.</td></tr>
+        <tr><td>fit()</td><td>Scale and translate the graph so it fits neatly inside the container, respecting <code>fitPadding</code>.</td></tr>
+        <tr><td>reset()</td><td>Reset pan and zoom to 1:1, centered.</td></tr>
+        <tr><td>_rebindInteractions()</td><td>Call after mutating <code>options.interactions</code> at runtime. Strips old event listeners, re-attaches new ones, and updates cursor and tips text.</td></tr>
+      </table>
+<pre><span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, {
+  layout: <span class="st">'auto'</span>,
+  interactions: { pan: <span class="nm">true</span>, zoom: <span class="nm">true</span>, hud: <span class="nm">true</span> },
+  colors: [<span class="st">'#E05C5C'</span>, <span class="st">'#4A90D9'</span>, <span class="st">'#4CAF82'</span>],
+  branchSpacingX: <span class="nm">200</span>,
+});
+
+map.<span class="fn">render</span>(myData);
+
+<span class="cm">// Later — switch to vertical layout and re-render</span>
+map.options.layout = <span class="st">'down'</span>;
+map.<span class="fn">render</span>(myData);
+
+<span class="cm">// Toggle pan off at runtime</span>
+map.options.interactions.pan = <span class="nm">false</span>;
+map.<span class="fn">_rebindInteractions</span>();</pre>
+    </div>
+
+    <!-- Node Links -->
+    <div class="docs-section">
+      <h2>Node Links</h2>
+      <p>Any node can carry an optional <code>url</code> field. When present:</p>
+      <ul>
+        <li>A small ↗ external-link icon appears inside the node on the right side.</li>
+        <li>The cursor changes to a pointer on hover.</li>
+        <li>Clicking opens the URL in a new tab (<code>noopener noreferrer</code>).</li>
+        <li>A drag that moves more than 5 px never triggers the link, so panning over linked nodes is safe.</li>
+      </ul>
+<pre>{ <span class="ky">topic</span>: <span class="st">"React"</span>, <span class="ky">url</span>: <span class="st">"https://react.dev"</span> }</pre>
+    </div>
+
+    <!-- Text Wrapping -->
+    <div class="docs-section">
+      <h2>Text Wrapping</h2>
+      <p>Long node labels wrap automatically. Each depth level has a configurable <code>maxWidth</code>. Text is measured with a hidden Canvas element before layout so node dimensions are always exact — the layout engine never needs to re-run after drawing.</p>
+      <ul>
+        <li>Words are greedily packed onto lines.</li>
+        <li>A single word wider than <code>maxWidth</code> gets its own line rather than being clipped.</li>
+        <li>Multi-line branch nodes (depth 1) switch from a pill shape to a rounded rectangle (<code>rx=10</code>) automatically.</li>
+        <li>All vertical spacing accounts for the actual wrapped height, so nodes never overlap.</li>
+      </ul>
+    </div>
+
+    <!-- Adaptive Spacing -->
+    <div class="docs-section">
+      <h2>Adaptive Column Spacing</h2>
+      <p>In horizontal layouts, column gaps scale down automatically as the tree gets deeper, keeping wide maps readable without manual tuning.</p>
+      <table class="prop-table">
+        <tr><th>Max depth</th><th>Factor</th><th>branchSpacingX</th><th>subSpacingX</th></tr>
+        <tr><td>≤ 2</td><td>1.00</td><td>220 px</td><td>170 px</td></tr>
+        <tr><td>3</td><td>0.83</td><td>183 px</td><td>141 px</td></tr>
+        <tr><td>4</td><td>0.63</td><td>138 px</td><td>107 px</td></tr>
+        <tr><td>5</td><td>0.50</td><td>110 px</td><td>85 px</td></tr>
+        <tr><td>≥ 6</td><td>0.45</td><td>99 px</td><td>77 px</td></tr>
+      </table>
+      <p>The floor is 45 % of the configured defaults. Vertical layouts are unaffected.</p>
+    </div>
+
+  </div>
+</div>
+
+<script src="porphyry.js"></script>
+<script>
+// ── Example datasets ───────────────────────────────────────────────────────
+
+const EXAMPLES = [
+  {
+    label: 'Product Strategy',
+    desc: 'Classic product roadmap',
+    data: {
+      topic: 'Product Strategy',
+      url: 'https://en.wikipedia.org/wiki/Product_strategy',
+      children: [
+        {
+          topic: 'Research',
+          children: [
+            { topic: 'User Interviews', url: 'https://www.nngroup.com/articles/user-interviews/' },
+            { topic: 'Competitor Analysis' },
+            { topic: 'Market Sizing' },
+          ]
+        },
+        {
+          topic: 'Design',
+          children: [
+            { topic: 'Wireframes' },
+            { topic: 'Prototyping', url: 'https://www.figma.com' },
+            { topic: 'Design System', url: 'https://m3.material.io' },
+          ]
+        },
+        {
+          topic: 'Engineering',
+          children: [
+            { topic: 'Frontend', url: 'https://developer.mozilla.org', children: [{ topic: 'React', url: 'https://react.dev' }, { topic: 'Tests' }] },
+            { topic: 'Backend',  children: [{ topic: 'API' }, { topic: 'DB' }] },
+            { topic: 'DevOps',   children: [{ topic: 'CI/CD', url: 'https://github.com/features/actions' }, { topic: 'Monitoring' }] },
+          ]
+        },
+        {
+          topic: 'Go-to-Market',
+          children: [
+            { topic: 'Pricing' },
+            { topic: 'Campaigns' },
+            { topic: 'Partnerships' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Solar System',
+    desc: 'Science — astronomy',
+    data: {
+      topic: 'Solar System',
+      url: 'https://solarsystem.nasa.gov',
+      children: [
+        {
+          topic: 'Inner Planets',
+          children: [
+            { topic: 'Mercury', url: 'https://solarsystem.nasa.gov/planets/mercury/overview/' },
+            { topic: 'Venus',   url: 'https://solarsystem.nasa.gov/planets/venus/overview/' },
+            { topic: 'Earth',   url: 'https://solarsystem.nasa.gov/planets/earth/overview/', children: [{ topic: 'Moon', url: 'https://solarsystem.nasa.gov/moons/earths-moon/overview/' }] },
+            { topic: 'Mars',    url: 'https://solarsystem.nasa.gov/planets/mars/overview/',  children: [{ topic: 'Phobos' }, { topic: 'Deimos' }] },
+          ]
+        },
+        {
+          topic: 'Asteroid Belt',
+          children: [
+            { topic: 'Ceres' },
+            { topic: 'Vesta' },
+          ]
+        },
+        {
+          topic: 'Outer Planets',
+          children: [
+            { topic: 'Jupiter', url: 'https://solarsystem.nasa.gov/planets/jupiter/overview/', children: [{ topic: 'Io' }, { topic: 'Europa', url: 'https://europa.nasa.gov' }] },
+            { topic: 'Saturn',  children: [{ topic: 'Titan', url: 'https://solarsystem.nasa.gov/moons/saturn-moons/titan/overview/' }, { topic: 'Rings' }] },
+            { topic: 'Uranus'  },
+            { topic: 'Neptune' },
+          ]
+        },
+        {
+          topic: 'Beyond',
+          children: [
+            { topic: 'Kuiper Belt', url: 'https://solarsystem.nasa.gov/solar-system/kuiper-belt/overview/' },
+            { topic: 'Oort Cloud' },
+            { topic: 'Pluto', url: 'https://solarsystem.nasa.gov/planets/dwarf-planets/pluto/overview/' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Programming',
+    desc: 'CS / Dev topics',
+    data: {
+      topic: 'Programming Languages',
+      children: [
+        {
+          topic: 'Compiled',
+          children: [
+            { topic: 'C / C++', children: [{ topic: 'Systems' }, { topic: 'Games' }] },
+            { topic: 'Rust', url: 'https://www.rust-lang.org', children: [{ topic: 'Safety' }, { topic: 'Speed' }] },
+            { topic: 'Go',   url: 'https://go.dev', children: [{ topic: 'Concurrency' }] },
+          ]
+        },
+        {
+          topic: 'JVM',
+          children: [
+            { topic: 'Java',   url: 'https://dev.java' },
+            { topic: 'Kotlin', url: 'https://kotlinlang.org' },
+            { topic: 'Scala' },
+          ]
+        },
+        {
+          topic: 'Interpreted',
+          children: [
+            { topic: 'Python', url: 'https://python.org', children: [{ topic: 'ML/AI' }, { topic: 'Web' }] },
+            { topic: 'Ruby',   children: [{ topic: 'Rails', url: 'https://rubyonrails.org' }] },
+            { topic: 'PHP' },
+          ]
+        },
+        {
+          topic: 'Web',
+          children: [
+            { topic: 'JavaScript', url: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', children: [{ topic: 'Node.js', url: 'https://nodejs.org' }, { topic: 'Deno', url: 'https://deno.com' }] },
+            { topic: 'TypeScript', url: 'https://www.typescriptlang.org' },
+            { topic: 'WebAssembly', url: 'https://webassembly.org' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Long Labels',
+    desc: 'Tests text wrapping',
+    data: {
+      topic: 'Long Node Name Wrapping Test',
+      children: [
+        {
+          topic: 'A Branch With A Very Long Label That Should Wrap',
+          children: [
+            { topic: 'Short' },
+            { topic: 'This leaf node also has a rather long description that will wrap' },
+            { topic: 'Another moderately long leaf label here' },
+          ]
+        },
+        {
+          topic: 'Another Lengthy Branch Name To Test',
+          children: [
+            { topic: 'Perfectly normal' },
+            { topic: 'SuperLongSingleWordWithoutSpacesThatShouldStillRender' },
+          ]
+        },
+        {
+          topic: 'Short',
+          children: [
+            { topic: 'Mix of short and very long leaf names to ensure spacing stays consistent' },
+            { topic: 'OK' },
+            { topic: 'Medium length name' },
+          ]
+        },
+        {
+          topic: 'Right Side With A Long Branch Label Too',
+          url: 'https://example.com',
+          children: [
+            { topic: 'Sub with link', url: 'https://example.com' },
+            { topic: 'Sub without link' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Minimal',
+    desc: 'Simple one-level map',
+    data: {
+      topic: 'Core Idea',
+      children: [
+        { topic: 'First Thought',  url: 'https://example.com' },
+        { topic: 'Second Thought' },
+        { topic: 'Third Thought'  },
+        { topic: 'Fourth Thought', url: 'https://example.com' },
+      ]
+    }
+  }
+];
+
+// ── Init ───────────────────────────────────────────────────────────────────
+
+let currentLayout = 'auto';
+const mm = new Porphyry('#porphyry-container', {
+  layout: currentLayout,
+  interactions: { pan: true, zoom: true, hud: true, tips: true },
+});
+
+// Build example buttons
+const exList = document.getElementById('examples-list');
+EXAMPLES.forEach((ex, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'example-btn' + (i === 0 ? ' active' : '');
+  btn.innerHTML = ex.label + '<small>' + ex.desc + '</small>';
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadExample(ex);
+  });
+  exList.appendChild(btn);
+});
+
+// Layout toggle
+document.getElementById('layout-toggle').addEventListener('click', e => {
+  const btn = e.target.closest('.toggle-btn');
+  if (!btn) return;
+  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentLayout = btn.dataset.layout;
+  mm.options.layout = currentLayout;
+  // Re-render the current JSON
+  const raw = document.getElementById('json-editor').value;
+  try {
+    const data = JSON.parse(raw);
+    mm.render(data);
+  } catch (e) { /* ignore parse errors during toggle */ }
+});
+
+// Load first example
+loadExample(EXAMPLES[0]);
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+function loadExample(ex) {
+  const editor = document.getElementById('json-editor');
+  editor.value = JSON.stringify(ex.data, null, 2);
+  clearError();
+  mm.render(ex.data);
+}
+
+function applyJSON() {
+  const raw = document.getElementById('json-editor').value;
+  try {
+    const data = JSON.parse(raw);
+    clearError();
+    mm.render(data);
+    document.querySelectorAll('.example-btn').forEach(b => b.classList.remove('active'));
+  } catch (e) {
+    showError('JSON Error: ' + e.message);
+  }
+}
+
+function showError(msg) { document.getElementById('json-error').textContent = msg; }
+function clearError()   { document.getElementById('json-error').textContent = ''; }
+
+function setInteraction() {
+  const pan  = document.getElementById('toggle-pan').checked;
+  const zoom = document.getElementById('toggle-zoom').checked;
+  mm.options.interactions.pan  = pan;
+  mm.options.interactions.zoom = zoom;
+  mm._rebindInteractions();
+}
+
+// ── Zoom controls (delegated to library HUD) ─────────────────────────────
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const workspace  = document.querySelector('.workspace');
+    const docsPanel  = document.getElementById('docs-panel');
+    const controls   = document.querySelector('.controls');
+
+    if (tab === 'docs') {
+      workspace.classList.add('hidden');
+      docsPanel.classList.add('active');
+      controls.style.visibility = 'hidden';  // hide demo-only controls
+    } else {
+      workspace.classList.remove('hidden');
+      docsPanel.classList.remove('active');
+      controls.style.visibility = '';
+      // Re-fit in case container was hidden during a render
+      requestAnimationFrame(() => mm.fit());
+    }
+  });
+});
+
+document.getElementById('json-editor').addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') applyJSON();
+});
+</script>
+</body>
+</html>

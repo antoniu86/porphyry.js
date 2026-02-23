@@ -1,2 +1,270 @@
-# porphyry.js
-A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG. Named after Porphyry of Tyre, the ancient philosopher who introduced the hierarchical tree of categories.
+# Porphyry.js
+
+A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG.
+
+Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
+
+[![version](https://img.shields.io/badge/version-1.4.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+
+---
+
+## Features
+
+- **Zero dependencies** — pure JavaScript, no build step required
+- **SVG-based** — crisp at any resolution, fully scalable
+- **Five layout modes** — auto-balanced, left, right, down, up
+- **Text wrapping** — long labels wrap automatically within a configurable max width
+- **Adaptive spacing** — column gaps scale down automatically for deep trees
+- **Clickable nodes** — add a `url` field to any node to make it a link
+- **Opt-in interactions** — pan, zoom, HUD and tips are all off by default for clean embedding
+- **Touch support** — single-finger pan, two-finger pinch-to-zoom
+
+---
+
+## Quick Start
+
+```html
+<!-- 1. Include the library -->
+<script src="porphyry.js"></script>
+
+<!-- 2. Give it a container with explicit dimensions -->
+<div id="map" style="width: 100%; height: 500px;"></div>
+
+<!-- 3. Initialize and render -->
+<script>
+  const map = new Porphyry('#map');
+  map.render({
+    topic: 'My Topic',
+    children: [
+      { topic: 'Branch A' },
+      { topic: 'Branch B', children: [
+        { topic: 'Sub-node' }
+      ]}
+    ]
+  });
+</script>
+```
+
+> **Note:** The container must have an explicit `width` and `height`. Porphyry fills 100% of it.
+
+---
+
+## Data Format
+
+Porphyry accepts a plain JSON object. Every node needs a `topic`; everything else is optional.
+
+```json
+{
+  "topic": "Root Subject",
+  "url": "https://example.com",
+  "children": [
+    {
+      "topic": "First Branch",
+      "direction": "left",
+      "children": [
+        { "topic": "Leaf node" },
+        { "topic": "Linked leaf", "url": "https://..." }
+      ]
+    },
+    { "topic": "Second Branch" }
+  ]
+}
+```
+
+### Node fields
+
+| Field | Type | Description |
+|---|---|---|
+| `topic` | `string` | Node label. Long text wraps automatically within the configured max width. |
+| `url` | `string?` | Makes the node clickable — opens in a new tab. A ↗ icon appears inside the node. |
+| `direction` | `"left" \| "right"?` | Pin a root-level child to a specific side in horizontal layouts. Ignored in vertical layouts. |
+| `children` | `Node[]?` | Child nodes. Omit or leave empty for leaf nodes. |
+
+---
+
+## Constructor
+
+```js
+new Porphyry(selector, options)
+```
+
+| Parameter | Type | Description |
+|---|---|---|
+| `selector` | `string \| Element` | A CSS selector string or a DOM element to render into. |
+| `options` | `object?` | Optional configuration — see Options below. |
+
+---
+
+## Options
+
+### Layout
+
+| Option | Default | Description |
+|---|---|---|
+| `layout` | `"auto"` | Direction mode: `"auto"`, `"left"`, `"right"`, `"down"`, or `"up"`. |
+| `fitPadding` | `64` | Pixels of padding when auto-fitting to the container. |
+| `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
+
+### Spacing — horizontal layouts
+
+| Option | Default | Description |
+|---|---|---|
+| `branchSpacingX` | `220` | Gap (px) between the center node and depth-1 branches. Auto-scales for deep trees. |
+| `subSpacingX` | `170` | Gap (px) between sub-levels (depth ≥ 2). Also auto-scales. |
+| `verticalSpacing` | `50` | Minimum vertical gap (px) between siblings. |
+
+### Spacing — vertical layouts
+
+| Option | Default | Description |
+|---|---|---|
+| `verticalSpacingY` | `60` | Vertical gap (px) between depth levels. |
+| `horizontalSpacing` | `30` | Horizontal gap (px) between sibling subtrees. |
+
+### Node styles
+
+| Option | Default | Description |
+|---|---|---|
+| `center.fontSize` | `17` | Font size of the root node. |
+| `center.paddingX / paddingY` | `28 / 16` | Inner padding of the root node. |
+| `center.maxWidth` | `240` | Max node width (px) before text wraps. |
+| `center.radius` | `12` | Corner radius of the root rectangle. |
+| `center.fill` | `"#1A1F2E"` | Root node background color. |
+| `center.color` | `"#FFFFFF"` | Root node text color. |
+| `branch.fontSize` | `14` | Font size of depth-1 nodes. |
+| `branch.paddingX / paddingY` | `18 / 10` | Inner padding of depth-1 nodes. |
+| `branch.maxWidth` | `200` | Max width before text wraps. |
+| `branch.color` | `"#FFFFFF"` | Depth-1 text color (fill comes from the color palette). |
+| `leaf.fontSize` | `13` | Font size of depth ≥ 2 nodes. |
+| `leaf.paddingX / paddingY` | `10 / 7` | Inner padding of leaf nodes. |
+| `leaf.maxWidth` | `170` | Max width before text wraps. |
+| `leaf.color` | `"#2D3748"` | Leaf node text color. |
+
+### Colors & edges
+
+| Option | Default | Description |
+|---|---|---|
+| `colors` | 10-color palette | Array of hex strings. Each root branch gets one in order; descendants inherit it. |
+| `edgeWidth.root` | `2.5` | Stroke width of edges from the center node. |
+| `edgeWidth.branch` | `2` | Stroke width of depth-1 → depth-2 edges. |
+| `edgeWidth.leaf` | `1.5` | Stroke width of deeper edges. |
+| `edgeOpacity` | `0.85` | Global opacity of all edges. |
+
+### Interactions
+
+All interactions are **off by default** for clean embedding. Opt in explicitly to what you need.
+
+| Option | Default | Description |
+|---|---|---|
+| `interactions.pan` | `false` | Enable drag-to-pan (mouse + touch). |
+| `interactions.zoom` | `false` | Enable scroll-wheel zoom and pinch-to-zoom. |
+| `interactions.hud` | `false` | Inject a zoom HUD (−, %, +, fit) into the bottom-right of the container. |
+| `interactions.tips` | `false` | Inject a hint bar at the bottom-center describing active interactions. |
+| `minZoom` | `0.08` | Minimum zoom scale. |
+| `maxZoom` | `4` | Maximum zoom scale. |
+| `zoomSensitivity` | `0.12` | Scroll-wheel zoom speed per tick. |
+
+---
+
+## Layout Modes
+
+Set via `options.layout` at init, or mutate `instance.options.layout` before calling `render()` again.
+
+| Value | Description |
+|---|---|
+| `"auto"` | Branches distributed evenly left and right. Explicit `direction` fields are honoured first; the rest are balanced. |
+| `"left"` | All branches grow left. Node `direction` fields ignored. |
+| `"right"` | All branches grow right. Node `direction` fields ignored. |
+| `"down"` | Tree grows downward, siblings spread horizontally. All nodes use an **outlined button** style. |
+| `"up"` | Tree grows upward, siblings spread horizontally. All nodes use an **outlined button** style. |
+
+> In `"down"` and `"up"` modes, all nodes — including the center and branches — use an outlined style (white fill, colored border) rather than the solid fills used in horizontal layouts.
+
+---
+
+## Methods
+
+| Method | Description |
+|---|---|
+| `render(data)` | Parse data, lay out the tree, and draw it. Clears any previous render. Auto-calls `fit()` after the first paint. |
+| `fit()` | Scale and pan so the graph fits neatly inside the container. |
+| `reset()` | Reset pan and zoom to 1:1, centered. |
+| `_rebindInteractions()` | Call after mutating `options.interactions` at runtime. Re-attaches listeners and refreshes the cursor and tips text. |
+
+### Example
+
+```js
+const map = new Porphyry('#map', {
+  layout: 'auto',
+  interactions: { pan: true, zoom: true, hud: true },
+  colors: ['#E05C5C', '#4A90D9', '#4CAF82'],
+  branchSpacingX: 200,
+});
+
+map.render(myData);
+
+// Switch to vertical layout
+map.options.layout = 'down';
+map.render(myData);
+
+// Toggle pan off at runtime
+map.options.interactions.pan = false;
+map._rebindInteractions();
+```
+
+---
+
+## Node Links
+
+Any node can carry an optional `url` field. When present:
+
+- A small ↗ external-link icon appears inside the node.
+- The cursor changes to a pointer on hover.
+- Clicking opens the URL in a new tab (`noopener noreferrer`).
+- Drags longer than 5 px never trigger the link, so panning over linked nodes is safe.
+
+```json
+{ "topic": "React", "url": "https://react.dev" }
+```
+
+---
+
+## Text Wrapping
+
+Long node labels wrap automatically. Each depth level has a configurable `maxWidth`. Text is measured with a hidden Canvas 2D context before layout runs, so node dimensions are always exact.
+
+- Words are greedily packed onto lines.
+- A single word wider than `maxWidth` gets its own line rather than being clipped.
+- Multi-line branch nodes (depth 1) automatically switch from a pill to a rounded rectangle (`rx=10`).
+- Vertical spacing accounts for the actual wrapped height, so nodes never overlap.
+
+---
+
+## Adaptive Column Spacing
+
+In horizontal layouts, column gaps scale down automatically as the tree gets deeper.
+
+| Max depth | Factor | `branchSpacingX` | `subSpacingX` |
+|---|---|---|---|
+| ≤ 2 | 1.00 | 220 px | 170 px |
+| 3 | 0.83 | 183 px | 141 px |
+| 4 | 0.63 | 138 px | 107 px |
+| 5 | 0.50 | 110 px | 85 px |
+| ≥ 6 | 0.45 | 99 px | 77 px |
+
+The floor is 45 % of the configured defaults. Vertical layouts are unaffected.
+
+---
+
+## Files
+
+| File | Size | Description |
+|---|---|---|
+| `porphyry.js` | ~40 KB | Full source with comments |
+| `porphyry.min.js` | ~18 KB | Minified production build |
+| `porphyry-demo.html` | — | Interactive demo + documentation |
+
+---
+
+## License
+
+MIT
