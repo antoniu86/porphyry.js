@@ -103,7 +103,7 @@ new Porphyry(selector, options)
 | Option | Default | Description |
 |---|---|---|
 | `layout` | `"auto"` | Direction mode: `"auto"`, `"left"`, `"right"`, `"down"`, or `"up"`. |
-| `fitPadding` | `64` | Pixels of padding when auto-fitting to the container. |
+| `fitPadding` | `20` | Pixels of padding when auto-fitting to the container. |
 | `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
 
 ### Spacing — horizontal layouts
