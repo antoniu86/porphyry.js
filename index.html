@@ -96,10 +96,41 @@
     .tab-btn.active { background: #EBF4FF; color: var(--accent); }
 
     /* ── Controls ── */
-    .controls {
+    /* ── Canvas area ── */
+    .canvas-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .canvas-toolbar {
       display: flex;
       align-items: center;
       gap: 8px;
+      height: 42px;
+      padding: 0 14px;
+      background: var(--panel-bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Subtle dot grid on the canvas itself */
+    #porphyry-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #EFF3FB 0%, #F7F8FC 70%);
+    }
+
+    #porphyry-container::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, #CBD5E0 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.45;
+      pointer-events: none;
     }
 
     .btn {
@@ -215,13 +246,17 @@
     }
 
     .sidebar-header {
-      padding: 14px 16px 10px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.6px;
       text-transform: uppercase;
       color: var(--muted);
       border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
     .examples {
@@ -266,7 +301,10 @@
     }
 
     .json-editor-label {
-      padding: 10px 16px 6px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
       font-size: 11px;
       font-weight: 700;
       letter-spacing: 0.6px;
@@ -313,31 +351,6 @@
     }
 
     .apply-btn:hover { background: #3A7CC5; }
-
-    /* ── Canvas area ── */
-    .canvas-wrap {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% 50%, #EFF3FB 0%, #F7F8FC 70%);
-    }
-
-    /* Subtle dot grid */
-    .canvas-wrap::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle, #CBD5E0 1px, transparent 1px);
-      background-size: 28px 28px;
-      opacity: 0.45;
-      pointer-events: none;
-    }
-
-    #porphyry-container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-    }
 
     /* ── Docs Panel ── */
     .docs-panel {
@@ -561,40 +574,10 @@
       <button class="tab-btn"        data-tab="docs">Docs</button>
     </nav>
   </div>
-
-  <div class="controls">
-    <span style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px">LAYOUT</span>
-    <div class="layout-toggle" id="layout-toggle">
-      <button class="toggle-btn active" data-layout="auto" title="Balanced left & right">⇔ Auto</button>
-      <button class="toggle-btn" data-layout="left"  title="All branches left">← Left</button>
-      <button class="toggle-btn" data-layout="right" title="All branches right">Right →</button>
-      <button class="toggle-btn" data-layout="down"  title="Tree grows downward">↓ Down</button>
-      <button class="toggle-btn" data-layout="up"    title="Tree grows upward">↑ Up</button>
-    </div>
-    <div class="separator"></div>
-    <label class="interact-toggle">
-      <input type="checkbox" id="toggle-pan"      checked onchange="setInteraction()"> Pan
-    </label>
-    <label class="interact-toggle">
-      <input type="checkbox" id="toggle-zoom"     checked onchange="setInteraction()"> Zoom
-    </label>
-    <label class="interact-toggle">
-      <input type="checkbox" id="toggle-collapse" checked onchange="setInteraction()"> Collapse
-    </label>
-    <div class="separator"></div>
-    <span style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px">SPACING</span>
-    <div class="spacing-wrap">
-      <input type="range" class="spacing-slider" id="spacing-slider"
-        min="0.1" max="2.0" step="0.1" value="0.6"
-        oninput="setSpacing(this.value)">
-      <span class="spacing-value" id="spacing-value">0.6×</span>
-    </div>
-    <div class="separator"></div>
-    <a class="btn" href="https://github.com/antoniu86/porphyry.js" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-      GitHub
-    </a>
-  </div>
+  <a class="btn" href="https://github.com/antoniu86/porphyry.js" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    GitHub
+  </a>
 </header>
 
 <!-- ── Workspace ── -->
@@ -615,6 +598,34 @@
 
   <!-- Canvas -->
   <div class="canvas-wrap">
+    <div class="canvas-toolbar" id="canvas-toolbar">
+      <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px">LAYOUT</span>
+      <div class="layout-toggle" id="layout-toggle">
+        <button class="toggle-btn active" data-layout="auto" title="Balanced left & right">⇔ Auto</button>
+        <button class="toggle-btn" data-layout="left"  title="All branches left">← Left</button>
+        <button class="toggle-btn" data-layout="right" title="All branches right">Right →</button>
+        <button class="toggle-btn" data-layout="down"  title="Tree grows downward">↓ Down</button>
+        <button class="toggle-btn" data-layout="up"    title="Tree grows upward">↑ Up</button>
+      </div>
+      <div class="separator"></div>
+      <label class="interact-toggle">
+        <input type="checkbox" id="toggle-pan"      checked onchange="setInteraction()"> Pan
+      </label>
+      <label class="interact-toggle">
+        <input type="checkbox" id="toggle-zoom"     checked onchange="setInteraction()"> Zoom
+      </label>
+      <label class="interact-toggle">
+        <input type="checkbox" id="toggle-collapse" checked onchange="setInteraction()"> Collapse
+      </label>
+      <div class="separator"></div>
+      <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px">SPACING</span>
+      <div class="spacing-wrap">
+        <input type="range" class="spacing-slider" id="spacing-slider"
+          min="0.1" max="2.0" step="0.1" value="0.6"
+          oninput="setSpacing(this.value)">
+        <span class="spacing-value" id="spacing-value">0.6×</span>
+      </div>
+    </div>
     <div id="porphyry-container"></div>
   </div>
 </div>
@@ -1402,16 +1413,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
     const workspace  = document.querySelector('.workspace');
     const docsPanel  = document.getElementById('docs-panel');
-    const controls   = document.querySelector('.controls');
 
     if (tab === 'docs') {
       workspace.classList.add('hidden');
       docsPanel.classList.add('active');
-      controls.style.visibility = 'hidden';  // hide demo-only controls
     } else {
       workspace.classList.remove('hidden');
       docsPanel.classList.remove('active');
-      controls.style.visibility = '';
       // Re-fit in case container was hidden during a render
       requestAnimationFrame(() => mm.fit());
     }
