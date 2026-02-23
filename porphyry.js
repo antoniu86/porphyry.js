@@ -23,6 +23,9 @@
 
   const NS = 'http://www.w3.org/2000/svg';
 
+  // Spacing presets — multipliers applied on top of the configured spacing values
+  const SPACING_PRESETS = { crowded: 1 / 3, normal: 1, wide: 5 / 3 };
+
   // Extra width reserved for the external-link icon when a node has a url
   const LINK_ICON_SPACE = 25; // px — space reserved on the right for the external-link icon
 
@@ -95,6 +98,9 @@
     animationDuration: 350,
     // Padding around the graph when auto-fitting
     fitPadding: 20,
+    // Spacing preset: 'crowded' (×0.33), 'normal' (×1), 'wide' (×1.67)
+    // Applied as a multiplier on top of all spacing values.
+    spacing: 'normal',
   };
 
   // ─── Utility ──────────────────────────────────────────────────────────────
@@ -523,37 +529,48 @@
    * Compute adaptive horizontal spacing for left/right layouts.
    * The deeper the tree, the tighter the columns — but never wider than the
    * configured defaults, and never narrower than 45 % of them.
+   * The spacing preset multiplier is applied first, then depth-adaptive scaling.
    *
    * Stored on this._sp so layout methods don't mutate options.
    */
   Porphyry.prototype._computeAdaptiveSpacing = function (root) {
     const o = this.options;
+    const sm = SPACING_PRESETS[o.spacing] || 1;
 
-    // Vertical layouts use fixed spacing — nothing to adapt
+    // Vertical layouts — apply preset only, no depth-adaptive scaling
     if (o.layout === 'up' || o.layout === 'down') {
-      this._sp = { branchSpacingX: o.branchSpacingX, subSpacingX: o.subSpacingX };
+      this._sp = {
+        branchSpacingX:    Math.round(o.branchSpacingX    * sm),
+        subSpacingX:       Math.round(o.subSpacingX       * sm),
+        verticalSpacingY:  Math.round(o.verticalSpacingY  * sm),
+        horizontalSpacing: Math.round(o.horizontalSpacing * sm),
+        verticalSpacing:   Math.round(o.verticalSpacing   * sm),
+      };
       return;
     }
 
-    const maxD = this._maxDepth(root);  // e.g. 0 = root only, 3 = three levels deep
+    const maxD = this._maxDepth(root);
 
-    // At maxDepth ≤ 2 keep full spacing.
-    // Scale down smoothly beyond that, floor at 45 %.
     const MIN_FACTOR    = 0.45;
-    const FULL_UP_TO    = 2;     // depths at or below this get factor 1.0
-    const SCALE_DIVISOR = 2.5;   // controls how quickly spacing shrinks
+    const FULL_UP_TO    = 2;
+    const SCALE_DIVISOR = 2.5;
 
-    const factor = maxD <= FULL_UP_TO
+    const depthFactor = maxD <= FULL_UP_TO
       ? 1.0
       : Math.max(MIN_FACTOR, SCALE_DIVISOR / maxD);
 
+    const factor = sm * depthFactor;
+
     this._sp = {
-      branchSpacingX: Math.round(o.branchSpacingX * factor),
-      subSpacingX:    Math.round(o.subSpacingX    * factor),
+      branchSpacingX:    Math.round(o.branchSpacingX    * factor),
+      subSpacingX:       Math.round(o.subSpacingX       * factor),
+      verticalSpacingY:  Math.round(o.verticalSpacingY  * sm),
+      horizontalSpacing: Math.round(o.horizontalSpacing * sm),
+      verticalSpacing:   Math.round(o.verticalSpacing   * sm),
     };
   };
   Porphyry.prototype._subtreeHeight = function (node) {
-    const vs = this.options.verticalSpacing;
+    const vs = this._sp ? this._sp.verticalSpacing : this.options.verticalSpacing;
     if (!node.children.length || this._collapsed.has(node._id)) {
       return node.height + vs;
     }
@@ -583,7 +600,7 @@
    * Returns the total horizontal space needed by a subtree in vertical layouts.
    */
   Porphyry.prototype._subtreeWidth = function (node) {
-    const hs = this.options.horizontalSpacing;
+    const hs = this._sp ? this._sp.horizontalSpacing : this.options.horizontalSpacing;
     if (!node.children.length || this._collapsed.has(node._id)) {
       return node.width + hs;
     }
@@ -601,7 +618,7 @@
     const o = this.options;
 
     // The near edge of the children row (top edge for down, bottom for up)
-    const edgeY = node.y + sign * (node.height / 2 + o.verticalSpacingY);
+    const edgeY = node.y + sign * (node.height / 2 + (this._sp ? this._sp.verticalSpacingY : o.verticalSpacingY));
 
     const widths = node.children.map(c => this._subtreeWidth(c));
     const totalW = widths.reduce((a, b) => a + b, 0);
