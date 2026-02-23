@@ -585,9 +585,9 @@
     <span style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:.3px">SPACING</span>
     <div class="spacing-wrap">
       <input type="range" class="spacing-slider" id="spacing-slider"
-        min="0.1" max="2.0" step="0.1" value="1.0"
+        min="0.1" max="2.0" step="0.1" value="0.6"
         oninput="setSpacing(this.value)">
-      <span class="spacing-value" id="spacing-value">1.0×</span>
+      <span class="spacing-value" id="spacing-value">0.6×</span>
     </div>
     <div class="separator"></div>
     <a class="btn" href="https://github.com/antoniu86/porphyry.js" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
@@ -1309,6 +1309,7 @@ const EXAMPLES = [
 let currentLayout = 'auto';
 const mm = new Porphyry('#porphyry-container', {
   layout: currentLayout,
+  spacing: 0.6,
   interactions: { pan: true, zoom: true, hud: true, tips: true, collapse: true },
 });
 
