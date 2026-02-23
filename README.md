@@ -13,10 +13,11 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 - **Zero dependencies** — pure JavaScript, no build step required
 - **SVG-based** — crisp at any resolution, fully scalable
 - **Five layout modes** — auto-balanced, left, right, down, up
+- **Collapsible branches** — +/− toggle buttons to expand and collapse subtrees
 - **Text wrapping** — long labels wrap automatically within a configurable max width
 - **Adaptive spacing** — column gaps scale down automatically for deep trees
 - **Clickable nodes** — add a `url` field to any node to make it a link
-- **Opt-in interactions** — pan, zoom, HUD and tips are all off by default for clean embedding
+- **Opt-in interactions** — pan, zoom, collapse, HUD and tips are all off by default for clean embedding
 - **Touch support** — single-finger pan, two-finger pinch-to-zoom
 
 ---
@@ -157,6 +158,7 @@ All interactions are **off by default** for clean embedding. Opt in explicitly t
 |---|---|---|
 | `interactions.pan` | `false` | Enable drag-to-pan (mouse + touch). |
 | `interactions.zoom` | `false` | Enable scroll-wheel zoom and pinch-to-zoom. |
+| `interactions.collapse` | `false` | Show +/− toggle buttons on nodes to expand/collapse subtrees. |
 | `interactions.hud` | `false` | Inject a zoom HUD (−, %, +, fit) into the bottom-right of the container. |
 | `interactions.tips` | `false` | Inject a hint bar at the bottom-center describing active interactions. |
 | `minZoom` | `0.08` | Minimum zoom scale. |
@@ -181,28 +183,55 @@ Set via `options.layout` at init, or mutate `instance.options.layout` before cal
 
 ---
 
+## Collapsible Branches
+
+When `interactions.collapse` is enabled, a small circular toggle button appears at the child-facing edge of every non-root node that has children. Clicking it collapses or expands that subtree.
+
+- The button shows **−** when expanded, **+** when collapsed
+- Button color matches the node's branch color; hover inverts fill and icon
+- Collapsed nodes are treated as leaves by the layout engine — the rest of the tree reflows automatically
+- Button position adapts to layout direction: left/right edge in horizontal layouts, top/bottom edge in vertical layouts
+- Collapse state is preserved across re-renders triggered by layout switching or data edits
+- Calling `render()` clears all collapse state and restores the full tree
+
+```js
+const map = new Porphyry('#map', {
+  interactions: { collapse: true }
+});
+
+map.render(data);
+
+// Programmatically collapse a branch by its internal node ID
+// (IDs are assigned in depth-first order starting from 0)
+map._collapsed.add(3);
+map._renderInternal(false);   // re-render without re-fitting
+```
+
+---
+
 ## Methods
 
 | Method | Description |
 |---|---|
-| `render(data)` | Parse data, lay out the tree, and draw it. Clears any previous render. Auto-calls `fit()` after the first paint. |
-| `fit()` | Scale and pan so the graph fits neatly inside the container. |
+| `render(data)` | Parse data, lay out and draw the full tree. Clears all collapse state. Auto-calls `fit()` after the first paint. |
+| `fit()` | Scale and pan so the graph fits neatly inside the container, respecting `fitPadding`. |
 | `reset()` | Reset pan and zoom to 1:1, centered. |
-| `_rebindInteractions()` | Call after mutating `options.interactions` at runtime. Re-attaches listeners and refreshes the cursor and tips text. |
+| `_renderInternal(autoFit)` | Re-layout and redraw while preserving collapse state. Pass `false` to skip re-fitting (e.g. after a collapse toggle). |
+| `_rebindInteractions()` | Call after mutating `options.interactions` at runtime. Re-attaches event listeners and refreshes the cursor and tips text. |
 
 ### Example
 
 ```js
 const map = new Porphyry('#map', {
   layout: 'auto',
-  interactions: { pan: true, zoom: true, hud: true },
+  interactions: { pan: true, zoom: true, collapse: true, hud: true, tips: true },
   colors: ['#E05C5C', '#4A90D9', '#4CAF82'],
   branchSpacingX: 200,
 });
 
 map.render(myData);
 
-// Switch to vertical layout
+// Switch to vertical layout and re-render
 map.options.layout = 'down';
 map.render(myData);
 
@@ -217,7 +246,7 @@ map._rebindInteractions();
 
 Any node can carry an optional `url` field. When present:
 
-- A small ↗ external-link icon appears inside the node.
+- A small ↗ external-link icon appears inside the node, right-aligned with padding from the edge.
 - The cursor changes to a pointer on hover.
 - Clicking opens the URL in a new tab (`noopener noreferrer`).
 - Drags longer than 5 px never trigger the link, so panning over linked nodes is safe.
@@ -257,11 +286,10 @@ The floor is 45 % of the configured defaults. Vertical layouts are unaffected.
 
 ## Files
 
-| File | Size | Description |
-|---|---|---|
-| `porphyry.js` | ~40 KB | Full source with comments |
-| `porphyry.min.js` | ~18 KB | Minified production build |
-| `porphyry-demo.html` | — | Interactive demo + documentation |
+| File | Description |
+|---|---|
+| `porphyry.js` | Full source with comments |
+| `index.html` | Interactive demo + built-in documentation |
 
 ---
 

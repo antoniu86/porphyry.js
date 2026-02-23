@@ -24,7 +24,7 @@
   const NS = 'http://www.w3.org/2000/svg';
 
   // Extra width reserved for the external-link icon when a node has a url
-  const LINK_ICON_SPACE = 20; // px
+  const LINK_ICON_SPACE = 25; // px — space reserved on the right for the external-link icon
 
   // ─── Defaults ─────────────────────────────────────────────────────────────
 
@@ -85,10 +85,11 @@
     // Interactions — all off by default for clean embedding.
     // Enable explicitly when you need them (e.g. in a demo or full-screen viewer).
     interactions: {
-      pan:  false,  // drag to pan
-      zoom: false,  // scroll-wheel + pinch to zoom
-      hud:  false,  // zoom level indicator + fit/+/- buttons (injected into container)
-      tips: false,  // keyboard/mouse hint bar (injected into container)
+      pan:      false,  // drag to pan
+      zoom:     false,  // scroll-wheel + pinch to zoom
+      hud:      false,  // zoom level indicator + fit/+/- buttons (injected into container)
+      tips:     false,  // keyboard/mouse hint bar (injected into container)
+      collapse: false,  // +/- toggle buttons to expand/collapse subtrees
     },
     // Animation
     animationDuration: 350,
@@ -121,26 +122,49 @@
 
   /**
    * Break `text` into lines so that no line exceeds `maxPx` pixels wide.
-   * Splits on whitespace; a single word that is too long stays on its own line.
+   * Splits on whitespace first; if a single word still exceeds maxPx it is
+   * sliced character-by-character until it fits.
    * Returns an array of strings (always at least one element).
    */
   function wrapText(text, maxPx, measureFn) {
     const words = text.split(/\s+/).filter(Boolean);
     if (!words.length) return [''];
 
+    // Break a single word that is too wide into character-level chunks
+    function breakWord(word) {
+      const chunks = [];
+      let chunk = '';
+      for (let i = 0; i < word.length; i++) {
+        const candidate = chunk + word[i];
+        if (measureFn(candidate) <= maxPx) {
+          chunk = candidate;
+        } else {
+          if (chunk) chunks.push(chunk);
+          chunk = word[i];
+        }
+      }
+      if (chunk) chunks.push(chunk);
+      return chunks.length ? chunks : [word];
+    }
+
     const lines = [];
     let current = '';
 
     words.forEach(word => {
-      const candidate = current ? current + ' ' + word : word;
-      if (measureFn(candidate) <= maxPx) {
-        current = candidate;
-      } else {
-        if (current) lines.push(current);
-        // If the single word itself overflows, push it anyway (no infinite loop)
-        current = word;
-      }
+      // If the word itself is too wide, break it into sub-chunks first
+      const parts = measureFn(word) > maxPx ? breakWord(word) : [word];
+
+      parts.forEach(part => {
+        const candidate = current ? current + ' ' + part : part;
+        if (measureFn(candidate) <= maxPx) {
+          current = candidate;
+        } else {
+          if (current) lines.push(current);
+          current = part;
+        }
+      });
     });
+
     if (current) lines.push(current);
     return lines;
   }
@@ -160,6 +184,8 @@
     this._tree = null;
     this._pz = { tx: 0, ty: 0, scale: 1 };
     this._textCache = {};
+    this._collapsed = new Set();   // set of node._id values that are collapsed
+    this._lastData = null;          // stored for collapse re-render
 
     this._buildDOM();
     this._bindPanZoom();
@@ -193,12 +219,14 @@
 
     this.svg.appendChild(defs);
 
-    // Render groups (edges below nodes)
+    // Render groups (edges below nodes, toggles on top)
     this.gMain = svgEl('g');
     this.gEdges = svgEl('g', { class: 'mm-edges' });
     this.gNodes = svgEl('g', { class: 'mm-nodes' });
+    this.gToggles = svgEl('g', { class: 'mm-toggles' });
     this.gMain.appendChild(this.gEdges);
     this.gMain.appendChild(this.gNodes);
+    this.gMain.appendChild(this.gToggles);
     this.svg.appendChild(this.gMain);
 
     this.container.appendChild(this.svg);
@@ -286,8 +314,9 @@
     if (!this._tips) return;
     const ix = this.options.interactions;
     const parts = [];
-    if (ix.zoom) parts.push('Scroll to zoom');
-    if (ix.pan)  parts.push('Drag to pan');
+    if (ix.zoom)     parts.push('Scroll to zoom');
+    if (ix.pan)      parts.push('Drag to pan');
+    if (ix.collapse) parts.push('+/− to collapse');
     parts.push('↗ click node to open link');
     this._tips.textContent = parts.join('  ·  ');
   };
@@ -296,26 +325,38 @@
 
   /**
    * Render a mind map from JSON data.
+   * Clears any existing collapse state.
    * @param {Object} data - Mind map data
    */
   Porphyry.prototype.render = function (data) {
-    this.gEdges.innerHTML = '';
-    this.gNodes.innerHTML = '';
+    this._collapsed.clear();
+    this._lastData = data;
+    this._renderInternal(true);
+  };
 
-    this._tree = this._buildTree(data, null, -1, 0);
+  /**
+   * Internal render — re-lays out and redraws without clearing collapse state.
+   * @param {boolean} autoFit  Whether to fit the view after rendering.
+   */
+  Porphyry.prototype._renderInternal = function (autoFit) {
+    this.gEdges.innerHTML   = '';
+    this.gNodes.innerHTML   = '';
+    this.gToggles.innerHTML = '';
+
+    this._nodeIdCounter = 0;
+    this._tree = this._buildTree(this._lastData, null, -1, 0);
     this._assignDirections(this._tree);
     this._computeSizes(this._tree);
-    this._computeAdaptiveSpacing(this._tree);  // ← must run after sizes, before layout
+    this._computeAdaptiveSpacing(this._tree);
     this._layoutTree(this._tree);
     this._drawTree(this._tree);
 
-    // Fit after DOM paint
-    const self = this;
-    requestAnimationFrame(function () {
+    if (autoFit) {
+      const self = this;
       requestAnimationFrame(function () {
-        self.fit();
+        requestAnimationFrame(function () { self.fit(); });
       });
-    });
+    }
   };
 
   /**
@@ -360,6 +401,7 @@
       parent: parent,
       colorIdx: colorIdx, // -1 for center
       children: [],
+      _id: this._nodeIdCounter++,      // stable ID for collapse tracking
       // Layout
       x: 0, y: 0,
       width: 0, height: 0,
@@ -510,7 +552,7 @@
   };
   Porphyry.prototype._subtreeHeight = function (node) {
     const vs = this.options.verticalSpacing;
-    if (node.children.length === 0) {
+    if (!node.children.length || this._collapsed.has(node._id)) {
       return node.height + vs;
     }
     const childH = node.children.reduce((sum, c) => sum + this._subtreeHeight(c), 0);
@@ -540,7 +582,7 @@
    */
   Porphyry.prototype._subtreeWidth = function (node) {
     const hs = this.options.horizontalSpacing;
-    if (node.children.length === 0) {
+    if (!node.children.length || this._collapsed.has(node._id)) {
       return node.width + hs;
     }
     const childW = node.children.reduce((sum, c) => sum + this._subtreeWidth(c), 0);
@@ -553,7 +595,7 @@
    * @param {number} sign  +1 for down, -1 for up
    */
   Porphyry.prototype._layoutVerticalNode = function (node, sign) {
-    if (!node.children.length) return;
+    if (!node.children.length || this._collapsed.has(node._id)) return;
     const o = this.options;
 
     // The near edge of the children row (top edge for down, bottom for up)
@@ -599,7 +641,7 @@
       : anchorX - node.width / 2;
     node.y = y;
 
-    if (!node.children.length) return;
+    if (!node.children.length || this._collapsed.has(node._id)) return;
 
     // Next column's anchor = this node's far edge + spacing
     const nextAnchor = dir === 'right'
@@ -621,9 +663,14 @@
   Porphyry.prototype._drawTree = function (root) {
     this._drawNode(root);
     this._drawSubtree(root);
+    // Draw collapse toggle buttons on top after all nodes/edges
+    if (this.options.interactions.collapse) {
+      this._drawAllToggles(root);
+    }
   };
 
   Porphyry.prototype._drawSubtree = function (node) {
+    if (this._collapsed.has(node._id)) return;  // subtree hidden
     node.children.forEach(child => {
       this._drawEdge(node, child);
       this._drawNode(child);
@@ -768,13 +815,103 @@
   };
 
   /**
+   * Walk the visible tree and draw a collapse toggle on every non-root node
+   * that has children.
+   */
+  Porphyry.prototype._drawAllToggles = function (node) {
+    if (node.depth > 0 && node.children.length > 0) {
+      this._drawCollapseBtn(node);
+    }
+    // Walk into children only if this node is not collapsed
+    if (!this._collapsed.has(node._id)) {
+      node.children.forEach(c => this._drawAllToggles(c));
+    }
+  };
+
+  /**
+   * Draw a +/− toggle button at the far edge of a node (the side facing its children).
+   */
+  Porphyry.prototype._drawCollapseBtn = function (node) {
+    const self = this;
+    const o = this.options;
+    const collapsed = this._collapsed.has(node._id);
+    const layout = o.layout;
+    const vertical = layout === 'up' || layout === 'down';
+    const R = 8; // circle radius
+
+    // Position the button center at the child-facing edge of the node
+    let bx, by;
+    if (vertical) {
+      bx = node.x;
+      by = layout === 'down'
+        ? node.y + node.height / 2 + R + 1
+        : node.y - node.height / 2 - R - 1;
+    } else {
+      const dir = node.direction || 'right';
+      by = node.y;
+      bx = dir === 'right'
+        ? node.x + node.width / 2 + R + 1
+        : node.x - node.width / 2 - R - 1;
+    }
+
+    const color = o.colors[node.colorIdx] || o.center.fill;
+
+    const g = svgEl('g', { class: 'mm-collapse-btn', cursor: 'pointer' });
+
+    const circle = svgEl('circle', {
+      cx: bx, cy: by, r: R,
+      fill: '#fff',
+      stroke: color,
+      'stroke-width': '1.8',
+    });
+
+    const icon = svgEl('text', {
+      x: bx, y: by,
+      'text-anchor': 'middle',
+      'dominant-baseline': 'central',
+      'font-size': '13',
+      'font-weight': '700',
+      fill: color,
+      'pointer-events': 'none',
+      style: 'font-family:system-ui,sans-serif;user-select:none',
+    });
+    icon.textContent = collapsed ? '+' : '−';
+
+    g.appendChild(circle);
+    g.appendChild(icon);
+
+    // Hover: invert colors
+    g.addEventListener('mouseenter', function () {
+      circle.setAttribute('fill', color);
+      icon.setAttribute('fill', '#fff');
+    });
+    g.addEventListener('mouseleave', function () {
+      circle.setAttribute('fill', '#fff');
+      icon.setAttribute('fill', color);
+    });
+
+    // Click: toggle and re-render (no fit, preserve pan/zoom)
+    g.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (collapsed) {
+        self._collapsed.delete(node._id);
+      } else {
+        self._collapsed.add(node._id);
+      }
+      self._renderInternal(false);
+    });
+
+    this.gToggles.appendChild(g);
+  };
+
+  /**
    * Draw a small external-link icon inside the node, right-aligned.
    * @param {Object} node
    * @param {string} color  icon stroke color
    */
   Porphyry.prototype._makeLinkIcon = function (node, color) {
     const s = 9;  // icon size
-    const margin = 7;
+    const margin = 12; // px from right edge (+5 from original 7)
     // Position: vertically centered, near right edge
     const ix = node.x + node.width / 2 - margin - s;
     const iy = node.y - s / 2;
@@ -1068,9 +1205,10 @@
     this.svg      = newSvg;
     oldSvg.parentNode.replaceChild(newSvg, oldSvg);
     // Re-point internal group references into the new svg
-    this.gMain  = newSvg.querySelector('.mm-edges').parentNode;
-    this.gEdges = newSvg.querySelector('.mm-edges');
-    this.gNodes = newSvg.querySelector('.mm-nodes');
+    this.gMain    = newSvg.querySelector('.mm-edges').parentNode;
+    this.gEdges   = newSvg.querySelector('.mm-edges');
+    this.gNodes   = newSvg.querySelector('.mm-nodes');
+    this.gToggles = newSvg.querySelector('.mm-toggles');
     this._bindPanZoom();
     this._updateTips();
   };

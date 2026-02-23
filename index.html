@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Porphyry.js — Demo</title>
+  <title>Porphyry.js — Zero-dependency SVG mind map library</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='6' fill='%231A1F2E'/%3E%3Ccircle cx='14' cy='14' r='3.5' fill='%23fff'/%3E%3Ccircle cx='14' cy='4.5' r='2' fill='%234A90D9'/%3E%3Ccircle cx='14' cy='23.5' r='2' fill='%23E05C5C'/%3E%3Ccircle cx='4.5' cy='14' r='2' fill='%234CAF82'/%3E%3Ccircle cx='23.5' cy='14' r='2' fill='%23F0883E'/%3E%3Ccircle cx='6.5' cy='6.5' r='1.6' fill='%238B6FD4'/%3E%3Ccircle cx='21.5' cy='6.5' r='1.6' fill='%23D4A017'/%3E%3Ccircle cx='6.5' cy='21.5' r='1.6' fill='%235BB8A0'/%3E%3Ccircle cx='21.5' cy='21.5' r='1.6' fill='%23D46FAB'/%3E%3Cline x1='14' y1='10.5' x2='14' y2='6.5' stroke='%234A90D9' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='14' y1='17.5' x2='14' y2='21.5' stroke='%23E05C5C' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='10.5' y1='14' x2='6.5' y2='14' stroke='%234CAF82' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='17.5' y1='14' x2='21.5' y2='14' stroke='%23F0883E' stroke-width='1.3' stroke-linecap='round'/%3E%3Cline x1='11' y1='11' x2='8' y2='8' stroke='%238B6FD4' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='17' y1='11' x2='20' y2='8' stroke='%23D4A017' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='11' y1='17' x2='8' y2='20' stroke='%235BB8A0' stroke-width='1.2' stroke-linecap='round'/%3E%3Cline x1='17' y1='17' x2='20' y2='20' stroke='%23D46FAB' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -479,6 +479,24 @@
       line-height: 1.6;
       margin: 12px 0 20px;
     }
+    /* ── Footer ── */
+    footer {
+      flex-shrink: 0;
+      text-align: center;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      background: var(--panel-bg);
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -520,14 +538,20 @@
     </div>
     <div class="separator"></div>
     <label class="interact-toggle">
-      <input type="checkbox" id="toggle-pan"  checked onchange="setInteraction()"> Pan
+      <input type="checkbox" id="toggle-pan"      checked onchange="setInteraction()"> Pan
     </label>
     <label class="interact-toggle">
-      <input type="checkbox" id="toggle-zoom" checked onchange="setInteraction()"> Zoom
+      <input type="checkbox" id="toggle-zoom"     checked onchange="setInteraction()"> Zoom
+    </label>
+    <label class="interact-toggle">
+      <input type="checkbox" id="toggle-collapse" checked onchange="setInteraction()"> Collapse
     </label>
     <div class="separator"></div>
     <div class="separator"></div>
-    <button class="btn" onclick="window.open('porphyry.js')">↓ Download</button>
+    <a class="btn" href="https://github.com/antoniu86/porphyry.js" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub
+    </a>
   </div>
 </header>
 
@@ -724,6 +748,7 @@
         <tr><th>Option</th><th>Default</th><th>Description</th></tr>
         <tr><td>interactions.pan</td><td>false</td><td>Enable drag-to-pan (mouse + touch).</td></tr>
         <tr><td>interactions.zoom</td><td>false</td><td>Enable scroll-wheel zoom and pinch-to-zoom.</td></tr>
+        <tr><td>interactions.collapse</td><td>false</td><td>Show +/− toggle buttons on nodes to expand/collapse subtrees.</td></tr>
         <tr><td>interactions.hud</td><td>false</td><td>Inject a zoom HUD (−, level %, +, fit) into the bottom-right of the container.</td></tr>
         <tr><td>interactions.tips</td><td>false</td><td>Inject a hint bar at the bottom-center describing active interactions.</td></tr>
         <tr><td>minZoom</td><td>0.08</td><td>Minimum zoom scale (when zoom is enabled).</td></tr>
@@ -747,26 +772,51 @@
       <div class="callout">In <code>"down"</code> and <code>"up"</code> modes all nodes — including the center and branches — use an <em>outlined button</em> style (white fill, colored border) instead of the solid-fill styles used in horizontal layouts.</div>
     </div>
 
+    <!-- Collapsible Branches -->
+    <div class="docs-section">
+      <h2>Collapsible Branches</h2>
+      <p>When <code>interactions.collapse</code> is enabled, a small circular toggle button appears at the child-facing edge of every non-root node that has children.</p>
+      <ul>
+        <li>Shows <strong>−</strong> when the subtree is expanded, <strong>+</strong> when collapsed.</li>
+        <li>Button color matches the node's branch color; hover inverts fill and icon.</li>
+        <li>Collapsed nodes are treated as leaves by the layout engine — the rest of the tree reflows automatically around them.</li>
+        <li>Button position adapts to layout direction: left/right edge in horizontal layouts, top/bottom edge in vertical layouts.</li>
+        <li>Collapse state is preserved across re-renders triggered by layout changes or data edits.</li>
+        <li>Calling <code>render()</code> clears all collapse state and restores the full tree.</li>
+      </ul>
+<pre><span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, {
+  interactions: { collapse: <span class="nm">true</span> }
+});
+
+map.<span class="fn">render</span>(data);
+
+<span class="cm">// Programmatically collapse a branch by its internal ID</span>
+<span class="cm">// (IDs assigned depth-first, root = 0)</span>
+map._collapsed.<span class="fn">add</span>(<span class="nm">3</span>);
+map.<span class="fn">_renderInternal</span>(<span class="nm">false</span>); <span class="cm">// re-render, no re-fit</span></pre>
+    </div>
+
     <!-- Methods -->
     <div class="docs-section">
       <h2>Methods</h2>
       <table class="prop-table">
         <tr><th>Method</th><th>Description</th></tr>
-        <tr><td>render(data)</td><td>Parse <code>data</code>, lay out the tree, and draw it. Clears any previous render. Automatically calls <code>fit()</code> after the first paint.</td></tr>
+        <tr><td>render(data)</td><td>Parse <code>data</code>, lay out and draw the full tree. <strong>Clears all collapse state.</strong> Automatically calls <code>fit()</code> after the first paint.</td></tr>
         <tr><td>fit()</td><td>Scale and translate the graph so it fits neatly inside the container, respecting <code>fitPadding</code>.</td></tr>
         <tr><td>reset()</td><td>Reset pan and zoom to 1:1, centered.</td></tr>
+        <tr><td>_renderInternal(autoFit)</td><td>Re-layout and redraw while <strong>preserving collapse state</strong>. Pass <code>false</code> to skip re-fitting (e.g. after a collapse toggle or layout switch).</td></tr>
         <tr><td>_rebindInteractions()</td><td>Call after mutating <code>options.interactions</code> at runtime. Strips old event listeners, re-attaches new ones, and updates cursor and tips text.</td></tr>
       </table>
 <pre><span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, {
   layout: <span class="st">'auto'</span>,
-  interactions: { pan: <span class="nm">true</span>, zoom: <span class="nm">true</span>, hud: <span class="nm">true</span> },
+  interactions: { pan: <span class="nm">true</span>, zoom: <span class="nm">true</span>, collapse: <span class="nm">true</span>, hud: <span class="nm">true</span>, tips: <span class="nm">true</span> },
   colors: [<span class="st">'#E05C5C'</span>, <span class="st">'#4A90D9'</span>, <span class="st">'#4CAF82'</span>],
   branchSpacingX: <span class="nm">200</span>,
 });
 
 map.<span class="fn">render</span>(myData);
 
-<span class="cm">// Later — switch to vertical layout and re-render</span>
+<span class="cm">// Switch to vertical layout and re-render</span>
 map.options.layout = <span class="st">'down'</span>;
 map.<span class="fn">render</span>(myData);
 
@@ -817,6 +867,8 @@ map.<span class="fn">_rebindInteractions</span>();</pre>
 
   </div>
 </div>
+
+<footer>Created by <a href="https://github.com/antoniu86" target="_blank" rel="noopener noreferrer">antoniu</a></footer>
 
 <script src="porphyry.js"></script>
 <script>
@@ -1005,6 +1057,204 @@ const EXAMPLES = [
         { topic: 'Fourth Thought', url: 'https://example.com' },
       ]
     }
+  },
+
+  {
+    label: 'Human Body',
+    desc: 'Biology — organ systems',
+    data: {
+      topic: 'Human Body',
+      url: 'https://en.wikipedia.org/wiki/Human_body',
+      children: [
+        {
+          topic: 'Nervous System',
+          url: 'https://en.wikipedia.org/wiki/Nervous_system',
+          children: [
+            { topic: 'Brain',          url: 'https://en.wikipedia.org/wiki/Brain' },
+            { topic: 'Spinal Cord' },
+            { topic: 'Peripheral Nerves' },
+          ]
+        },
+        {
+          topic: 'Cardiovascular',
+          url: 'https://en.wikipedia.org/wiki/Circulatory_system',
+          children: [
+            { topic: 'Heart',    url: 'https://en.wikipedia.org/wiki/Heart' },
+            { topic: 'Arteries' },
+            { topic: 'Veins' },
+            { topic: 'Blood',    url: 'https://en.wikipedia.org/wiki/Blood' },
+          ]
+        },
+        {
+          topic: 'Skeletal',
+          children: [
+            { topic: '206 Bones' },
+            { topic: 'Cartilage' },
+            { topic: 'Joints' },
+          ]
+        },
+        {
+          topic: 'Muscular',
+          children: [
+            { topic: 'Skeletal Muscle' },
+            { topic: 'Smooth Muscle' },
+            { topic: 'Cardiac Muscle' },
+          ]
+        },
+        {
+          topic: 'Digestive',
+          url: 'https://en.wikipedia.org/wiki/Human_digestive_system',
+          children: [
+            { topic: 'Stomach' },
+            { topic: 'Small Intestine' },
+            { topic: 'Large Intestine' },
+            { topic: 'Liver', url: 'https://en.wikipedia.org/wiki/Liver' },
+          ]
+        },
+        {
+          topic: 'Immune',
+          children: [
+            { topic: 'Lymph Nodes' },
+            { topic: 'White Blood Cells' },
+            { topic: 'Antibodies' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Personal Finance',
+    desc: 'Money management basics',
+    data: {
+      topic: 'Personal Finance',
+      children: [
+        {
+          topic: 'Budgeting',
+          children: [
+            { topic: '50/30/20 Rule' },
+            { topic: 'Track Expenses' },
+            { topic: 'Emergency Fund', children: [{ topic: '3–6 months expenses' }] },
+          ]
+        },
+        {
+          topic: 'Investing',
+          url: 'https://www.investopedia.com',
+          children: [
+            { topic: 'Index Funds',  url: 'https://www.investopedia.com/terms/i/indexfund.asp' },
+            { topic: 'ETFs' },
+            { topic: 'Real Estate' },
+            { topic: 'Bonds' },
+          ]
+        },
+        {
+          topic: 'Retirement',
+          children: [
+            { topic: '401(k) / IRA' },
+            { topic: 'Compound Interest' },
+            { topic: 'Start Early' },
+          ]
+        },
+        {
+          topic: 'Debt',
+          children: [
+            { topic: 'Avalanche Method' },
+            { topic: 'Snowball Method' },
+            { topic: 'Avoid High-Interest' },
+          ]
+        },
+        {
+          topic: 'Insurance',
+          children: [
+            { topic: 'Health' },
+            { topic: 'Life' },
+            { topic: 'Home / Renters' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Wide Map (9 branches)',
+    desc: 'Tests many first-level nodes',
+    data: {
+      topic: 'Knowledge',
+      children: [
+        {
+          topic: 'Natural Sciences',
+          children: [
+            { topic: 'Physics',   url: 'https://en.wikipedia.org/wiki/Physics' },
+            { topic: 'Chemistry', url: 'https://en.wikipedia.org/wiki/Chemistry' },
+            { topic: 'Biology',   url: 'https://en.wikipedia.org/wiki/Biology' },
+          ]
+        },
+        {
+          topic: 'Formal Sciences',
+          children: [
+            { topic: 'Mathematics' },
+            { topic: 'Logic' },
+            { topic: 'Statistics' },
+          ]
+        },
+        {
+          topic: 'Social Sciences',
+          children: [
+            { topic: 'Economics' },
+            { topic: 'Psychology' },
+            { topic: 'Sociology' },
+          ]
+        },
+        {
+          topic: 'Humanities',
+          children: [
+            { topic: 'History' },
+            { topic: 'Philosophy' },
+            { topic: 'Linguistics' },
+          ]
+        },
+        {
+          topic: 'Arts',
+          children: [
+            { topic: 'Visual Arts' },
+            { topic: 'Music' },
+            { topic: 'Literature' },
+          ]
+        },
+        {
+          topic: 'Technology',
+          children: [
+            { topic: 'Computer Science', url: 'https://en.wikipedia.org/wiki/Computer_science' },
+            { topic: 'Engineering' },
+            { topic: 'Robotics' },
+          ]
+        },
+        {
+          topic: 'Medicine',
+          children: [
+            { topic: 'Anatomy' },
+            { topic: 'Pharmacology' },
+            { topic: 'Surgery' },
+          ]
+        },
+        {
+          topic: 'Law',
+          children: [
+            { topic: 'Civil Law' },
+            { topic: 'Criminal Law' },
+            { topic: 'International Law' },
+          ]
+        },
+        {
+          topic: 'Applied Sciences',
+          children: [
+            { topic: 'Architecture' },
+            { topic: 'Agriculture' },
+            { topic: 'Environmental Science' },
+          ]
+        },
+      ]
+    }
   }
 ];
 
@@ -1013,7 +1263,7 @@ const EXAMPLES = [
 let currentLayout = 'auto';
 const mm = new Porphyry('#porphyry-container', {
   layout: currentLayout,
-  interactions: { pan: true, zoom: true, hud: true, tips: true },
+  interactions: { pan: true, zoom: true, hud: true, tips: true, collapse: true },
 });
 
 // Build example buttons
@@ -1074,11 +1324,16 @@ function showError(msg) { document.getElementById('json-error').textContent = ms
 function clearError()   { document.getElementById('json-error').textContent = ''; }
 
 function setInteraction() {
-  const pan  = document.getElementById('toggle-pan').checked;
-  const zoom = document.getElementById('toggle-zoom').checked;
-  mm.options.interactions.pan  = pan;
-  mm.options.interactions.zoom = zoom;
+  const pan      = document.getElementById('toggle-pan').checked;
+  const zoom     = document.getElementById('toggle-zoom').checked;
+  const collapse = document.getElementById('toggle-collapse').checked;
+  mm.options.interactions.pan      = pan;
+  mm.options.interactions.zoom     = zoom;
+  mm.options.interactions.collapse = collapse;
   mm._rebindInteractions();
+  // If collapse was just disabled, expand everything first
+  if (!collapse) mm._collapsed.clear();
+  mm._renderInternal(false);
 }
 
 // ── Zoom controls (delegated to library HUD) ─────────────────────────────
