@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore the Solar System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            background-color: #0b1d3a;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        h2 {
+            color: #0b1d3a;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .content-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        /* Style for the map container to make it stand out slightly */
+        #map {
+            background-color: #ffffff;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Our Solar System</h1>
+        <p>A cosmic neighborhood in the Milky Way galaxy</p>
+    </header>
+
+    <div class="content-section">
+        <h2>About the Solar System</h2>
+        <p>
+            The planetary system we call home is located in an outer spiral arm of the Milky Way galaxy. 
+            It consists of our star, the Sun, and everything bound to it by gravity — the planets Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune; dwarf planets such as Pluto; dozens of moons; and millions of asteroids, comets, and meteoroids.
+        </p>
+    </div>
+
+    <div class="content-section">
+        <h2>Interactive Mind Map</h2>
+        <p>Explore the structure of the Solar System using the interactive mind map below.</p>
+        
+        <div id="map" style="width:100%;height:600px"></div>
+    </div>
+
+    <div class="content-section">
+        <h2>Regions of the Solar System</h2>
+        <ul>
+            <li><strong>Inner Planets:</strong> The rocky, terrestrial planets closest to the Sun (Mercury, Venus, Earth, Mars).</li>
+            <li><strong>Asteroid Belt:</strong> A region of space between the orbits of Mars and Jupiter where most of the asteroids in our Solar System are found.</li>
+            <li><strong>Outer Planets:</strong> The gas and ice giants that dominate the outer region (Jupiter, Saturn, Uranus, Neptune).</li>
+            <li><strong>Beyond:</strong> The icy regions of the Kuiper Belt and the distant Oort Cloud, home to dwarf planets and comets.</li>
+        </ul>
+    </div>
+
+    <script src="porphyry.min.js"></script>
+
+    <script>
+        // Your JSON data assigned to a variable for easy use
+        const solarSystemData = {
+          "topic": "Solar System",
+          "url": "https://solarsystem.nasa.gov",
+          "children": [
+            {
+              "topic": "Inner Planets",
+              "children": [
+                {
+                  "topic": "Mercury",
+                  "url": "https://solarsystem.nasa.gov/planets/mercury/overview/"
+                },
+                {
+                  "topic": "Venus",
+                  "url": "https://solarsystem.nasa.gov/planets/venus/overview/"
+                },
+                {
+                  "topic": "Earth",
+                  "url": "https://solarsystem.nasa.gov/planets/earth/overview/",
+                  "children": [
+                    {
+                      "topic": "Moon",
+                      "url": "https://solarsystem.nasa.gov/moons/earths-moon/overview/"
+                    }
+                  ]
+                },
+                {
+                  "topic": "Mars",
+                  "url": "https://solarsystem.nasa.gov/planets/mars/overview/",
+                  "children": [
+                    {
+                      "topic": "Phobos"
+                    },
+                    {
+                      "topic": "Deimos"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "topic": "Asteroid Belt",
+              "children": [
+                {
+                  "topic": "Ceres"
+                },
+                {
+                  "topic": "Vesta"
+                }
+              ]
+            },
+            {
+              "topic": "Outer Planets",
+              "children": [
+                {
+                  "topic": "Jupiter",
+                  "url": "https://solarsystem.nasa.gov/planets/jupiter/overview/",
+                  "children": [
+                    {
+                      "topic": "Io"
+                    },
+                    {
+                      "topic": "Europa",
+                      "url": "https://europa.nasa.gov"
+                    }
+                  ]
+                },
+                {
+                  "topic": "Saturn",
+                  "children": [
+                    {
+                      "topic": "Titan",
+                      "url": "https://solarsystem.nasa.gov/moons/saturn-moons/titan/overview/"
+                    },
+                    {
+                      "topic": "Rings"
+                    }
+                  ]
+                },
+                {
+                  "topic": "Uranus"
+                },
+                {
+                  "topic": "Neptune"
+                }
+              ]
+            },
+            {
+              "topic": "Beyond",
+              "children": [
+                {
+                  "topic": "Kuiper Belt",
+                  "url": "https://solarsystem.nasa.gov/solar-system/kuiper-belt/overview/"
+                },
+                {
+                  "topic": "Oort Cloud"
+                },
+                {
+                  "topic": "Pluto",
+                  "url": "https://solarsystem.nasa.gov/planets/dwarf-planets/pluto/overview/"
+                }
+              ]
+            }
+          ]
+        };
+
+        // -------------------------------------------------------------
+        // TODO: Add your mind map javascript implementation here.
+        // You can use the 'solarSystemData' variable and mount it to 
+        // document.getElementById('map')
+        // -------------------------------------------------------------
+
+        const map = new Porphyry('#map');
+        map.render(solarSystemData);
+        
+        console.log("Mind map data loaded successfully:", solarSystemData);
+    </script>
+</body>
+</html>

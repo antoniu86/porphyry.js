@@ -94,7 +94,7 @@
     // Animation
     animationDuration: 350,
     // Padding around the graph when auto-fitting
-    fitPadding: 64,
+    fitPadding: 20,
   };
 
   // ─── Utility ──────────────────────────────────────────────────────────────
@@ -201,6 +201,8 @@
     this.svg = svgEl('svg', { width: '100%', height: '100%' });
     this.svg.style.display = 'block';
     this.svg.style.cursor = this.options.interactions.pan ? 'grab' : 'default';
+    this.svg.style.transform = 'translateZ(0)';
+    this.svg.style.willChange = 'transform';
 
     // Defs for filters
     const defs = svgEl('defs');
@@ -791,6 +793,7 @@
 
     // ── Hover ──
     g.style.transition = 'opacity 0.15s';
+    g.style.willChange = 'opacity';
     g.addEventListener('mouseenter', () => {
       g.style.opacity = '0.82';
       if (hasLink) this.svg.style.cursor = 'pointer';
