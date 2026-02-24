@@ -458,8 +458,13 @@
 
     if (autoFit) {
       const self = this;
+      this.svg.style.opacity = '0';
       requestAnimationFrame(function () {
-        requestAnimationFrame(function () { self.fit(); });
+        requestAnimationFrame(function () {
+          self.fit();
+          self.svg.style.transition = 'opacity 0.15s';
+          self.svg.style.opacity = '1';
+        });
       });
     }
   };
