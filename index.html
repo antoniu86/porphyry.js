@@ -214,6 +214,25 @@
       color: var(--text); min-width: 30px; text-align: left;
     }
 
+    .theme-select {
+      appearance: none;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 4px 24px 4px 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23718096'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 7px center;
+      transition: border-color 0.15s;
+    }
+    .theme-select:hover { border-color: var(--accent); }
+    .theme-select:focus { outline: none; border-color: var(--accent); }
+
     .interact-toggle {
       display: flex;
       align-items: center;
@@ -634,6 +653,19 @@
           oninput="setSpacing(this.value)">
         <span class="spacing-value" id="spacing-value">0.6×</span>
       </div>
+      <div class="separator"></div>
+      <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px">THEME</span>
+      <select class="theme-select" id="theme-select" onchange="setTheme(this.value)">
+        <option value="classic" selected>Classic</option>
+        <option value="ghost">Ghost</option>
+        <option value="underline">Underline</option>
+        <option value="baseline">Baseline</option>
+        <option value="outline">Outline</option>
+        <option value="solid">Solid</option>
+        <option value="solid-sharp">Solid Sharp</option>
+        <option value="outline-sharp">Outline Sharp</option>
+        <option value="minimal">Minimal</option>
+      </select>
     </div>
     <div id="porphyry-container"></div>
   </div>
@@ -749,6 +781,7 @@
       <table class="prop-table">
         <tr><th>Option</th><th>Default</th><th>Description</th></tr>
         <tr><td>layout</td><td>"auto"</td><td>Direction mode. One of <code>"auto"</code>, <code>"left"</code>, <code>"right"</code>, <code>"down"</code>, <code>"up"</code>. See Layout Modes below.</td></tr>
+        <tr><td>theme</td><td>"classic"</td><td>Visual theme controlling node shapes, fills, borders and edge anchors. See Themes below.</td></tr>
         <tr><td>fitPadding</td><td>20</td><td>Pixels of padding around the graph when auto-fitting to the container.</td></tr>
         <tr><td>lineHeight</td><td>1.45</td><td>Line height multiplier for wrapped text.</td></tr>
         <tr><td>spacing</td><td>1</td><td>Spacing multiplier applied to all node distances before depth-adaptive scaling. Any value from <code>0.1</code> (extremely compact) to <code>2.0</code> (very spread out). <code>1</code> is the default.</td></tr>
@@ -822,6 +855,37 @@
         <tr><td>zoomSensitivity</td><td>0.12</td><td>Scroll-wheel zoom speed per tick.</td></tr>
       </table>
     </div>
+
+    <!-- Themes -->
+    <div class="docs-section">
+      <h2>Themes</h2>
+      <p>The <code>theme</code> option controls node shapes, fills, borders and edge connection points across the whole map. All 9 themes work in every layout; 4 extra themes are exclusive to horizontal layouts (auto / left / right).</p>
+<pre><span class="cm">// Set at init time</span>
+<span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, { theme: <span class="st">'solid'</span> });
+
+<span class="cm">// Change at runtime</span>
+map.options.theme = <span class="st">'baseline'</span>;
+map.<span class="fn">_renderInternal</span>(<span class="kw">true</span>);</pre>
+
+      <h3>Universal themes</h3>
+      <table class="prop-table">
+        <tr><th>Theme</th><th>Fill</th><th>Border</th><th>Edge anchor</th></tr>
+        <tr><td>outline</td><td>white</td><td>colored full border, rounded</td><td>center (default for vertical)</td></tr>
+        <tr><td>solid</td><td>solid color, rounded</td><td>none</td><td>center</td></tr>
+        <tr><td>solid-sharp</td><td>solid color, sharp corners</td><td>none</td><td>center</td></tr>
+        <tr><td>outline-sharp</td><td>white, sharp corners</td><td>colored full border</td><td>center</td></tr>
+        <tr><td>minimal</td><td>none</td><td>none</td><td>center</td></tr>
+      </table>
+
+      <h3>Horizontal-only themes</h3>
+      <table class="prop-table">
+        <tr><th>Theme</th><th>Fill</th><th>Border</th><th>Edge anchor</th></tr>
+        <tr><td>classic</td><td>dark center, colored pills (depth 1), 10% tint (depth 2+)</td><td>bottom line on leaves</td><td>bottom for leaves, center otherwise (default for horizontal)</td></tr>
+        <tr><td>ghost</td><td>10% tinted on all nodes</td><td>none</td><td>center — all nodes</td></tr>
+        <tr><td>underline</td><td>10% tinted on all nodes</td><td>bottom solid line</td><td>bottom — all nodes</td></tr>
+        <tr><td>baseline</td><td>none</td><td>bottom solid line</td><td>bottom — all nodes</td></tr>
+      </table>
+      <p>When <code>classic</code> is selected with a vertical layout it automatically falls back to <code>outline</code>. When switching to a vertical layout in the demo, the <code>classic</code>, <code>ghost</code>, <code>underline</code> and <code>baseline</code> options are hidden from the dropdown.</p>
 
     <!-- Layout Modes -->
     <div class="docs-section">
@@ -1355,6 +1419,7 @@ document.getElementById('layout-toggle').addEventListener('click', e => {
   btn.classList.add('active');
   currentLayout = btn.dataset.layout;
   mm.options.layout = currentLayout;
+  syncThemeDropdown(currentLayout);
   // Re-render the current JSON
   const raw = document.getElementById('json-editor').value;
   try {
@@ -1389,6 +1454,46 @@ function applyJSON() {
 
 function showError(msg) { document.getElementById('json-error').textContent = msg; }
 function clearError()   { document.getElementById('json-error').textContent = ''; }
+
+function setTheme(val) {
+  mm.options.theme = val;
+  mm._renderInternal(false);
+}
+
+const THEMES_HORIZONTAL = [
+  { value: 'classic',       label: 'Classic'       },
+  { value: 'ghost',         label: 'Ghost'         },
+  { value: 'underline',     label: 'Underline'     },
+  { value: 'baseline',      label: 'Baseline'      },
+  { value: 'outline',       label: 'Outline'       },
+  { value: 'solid',         label: 'Solid'         },
+  { value: 'solid-sharp',   label: 'Solid Sharp'   },
+  { value: 'outline-sharp', label: 'Outline Sharp' },
+  { value: 'minimal',       label: 'Minimal'       },
+];
+
+const THEMES_VERTICAL = [
+  { value: 'outline',       label: 'Outline'       },
+  { value: 'solid',         label: 'Solid'         },
+  { value: 'solid-sharp',   label: 'Solid Sharp'   },
+  { value: 'outline-sharp', label: 'Outline Sharp' },
+  { value: 'minimal',       label: 'Minimal'       },
+];
+
+function syncThemeDropdown(layout) {
+  const sel = document.getElementById('theme-select');
+  const isVertical = layout === 'up' || layout === 'down';
+  const themes = isVertical ? THEMES_VERTICAL : THEMES_HORIZONTAL;
+  const current = sel.value;
+  sel.innerHTML = themes.map(t =>
+    `<option value="${t.value}"${t.value === current ? ' selected' : ''}>${t.label}</option>`
+  ).join('');
+  // If current theme was removed (classic not in vertical list), fallback
+  if (!themes.find(t => t.value === sel.value)) {
+    sel.value = themes[0].value;
+    mm.options.theme = sel.value;
+  }
+}
 
 function setSpacing(val) {
   const v = parseFloat(val);

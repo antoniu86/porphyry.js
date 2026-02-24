@@ -14,6 +14,7 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 - **SVG-based** — crisp at any resolution, fully scalable
 - **Five layout modes** — auto-balanced, left, right, down, up
 - **Collapsible branches** — +/− toggle buttons to expand and collapse subtrees
+- **9 built-in themes** — classic, ghost, underline, baseline, outline, solid, solid-sharp, outline-sharp, minimal; smart defaults per layout
 - **Text wrapping** — long labels wrap automatically within a configurable max width
 - **Adaptive spacing** — column gaps scale down automatically for deep trees
 - **Clickable nodes** — add a `url` field to any node to make it a link
@@ -108,6 +109,7 @@ new Porphyry(selector, options)
 | `fitPadding` | `20` | Pixels of padding when auto-fitting to the container. |
 | `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
 | `spacing` | `1` | Spacing multiplier applied to all node distances before depth-adaptive scaling. Accepts any value from `0.1` (extremely compact) to `2.0` (very spread out). `1` is the default. |
+| `theme` | `"classic"` | Visual theme. See the [Themes](#themes) section for all options. |
 
 ### Spacing — horizontal layouts
 
@@ -142,6 +144,41 @@ new Porphyry(selector, options)
 | `leaf.paddingX / paddingY` | `10 / 7` | Inner padding of leaf nodes. |
 | `leaf.maxWidth` | `170` | Max width before text wraps. |
 | `leaf.color` | `"#2D3748"` | Leaf node text color. |
+
+### Themes
+
+The `theme` option controls node shapes, fills, borders and edge connection points across the whole map. Pass it as a string when initialising or change it at runtime and call `_renderInternal(true)`.
+
+```js
+new Porphyry('#map', { theme: 'solid' });
+
+// Change at runtime
+map.options.theme = 'baseline';
+map._renderInternal(true);
+```
+
+**Themes available in all layouts:**
+
+| Theme | Shape | Fill | Border | Edge anchor |
+|---|---|---|---|---|
+| `outline` | pill / rounded rect | white | colored full border | center |
+| `solid` | pill / rounded rect | solid color | none | center |
+| `solid-sharp` | rectangle | solid color | none | center |
+| `outline-sharp` | rectangle | white | colored full border | center |
+| `minimal` | none | — | none | center |
+
+**Horizontal-layout themes** (auto / left / right):
+
+| Theme | Shape | Fill | Border | Edge anchor |
+|---|---|---|---|---|
+| `classic` | pill/transparent/underline | dark center, colored branch, transparent leaf | bottom line on leaves | bottom for leaves, center otherwise |
+| `ghost` | flat rect | 10% tinted | none | center — all nodes |
+| `underline` | flat rect | 10% tinted | bottom solid line | bottom — all nodes |
+| `baseline` | none | none | bottom solid line | bottom — all nodes |
+
+> When `classic` is used with a vertical layout (`up` / `down`), it automatically falls back to `outline`.
+
+> Edge anchors for `underline` and `baseline` connect at the bottom of every node — including the center subject — so the bezier curves flow continuously from the border lines.
 
 ### Colors & edges
 

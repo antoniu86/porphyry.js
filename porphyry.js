@@ -98,6 +98,18 @@
     // Spacing multiplier — applied on top of all spacing values before depth-adaptive scaling.
     // 1.0 = default, 0.3 = very compact, 2.0 = very spread out.
     spacing: 1,
+    // Visual theme — controls node shapes, fills and borders.
+    // 'classic'      : default horizontal style (solid dark center, colored branch pills, transparent leaf with underline)
+    // 'outline'      : white fill, colored border, rounded corners (default vertical style)
+    // 'solid'        : colored fill, rounded corners
+    // 'solid-sharp'  : colored fill, sharp corners
+    // 'outline-sharp': white fill, colored border, sharp corners
+    // 'minimal'      : no box, just colored text
+    // Horizontal-only:
+    // 'ghost'        : transparent colored bg on all nodes, no border, center-anchored edges
+    // 'underline'    : transparent colored bg + bottom border, bottom-anchored edges
+    // 'baseline'     : no background, bottom border only, bottom-anchored edges
+    theme: 'classic',
   };
 
   // ─── Utility ──────────────────────────────────────────────────────────────
@@ -699,110 +711,134 @@
     const hasLink = !!node.url;
     const layout = o.layout;
     const vertical = layout === 'up' || layout === 'down';
+    const theme = (o.theme === 'classic' && vertical) ? 'outline' : (o.theme || 'classic');
 
     const g = svgEl('g', {
       class: 'mm-node' + (hasLink ? ' mm-node-linked' : ''),
       'data-depth': node.depth,
     });
 
-    // Text x — shift left slightly when a link icon occupies the right side
     const textX = hasLink ? node.x - LINK_ICON_SPACE / 2 : node.x;
+    const color = node.depth === 0 ? o.center.fill : o.colors[node.colorIdx];
+    const fontWeight = node.depth === 0 ? '700' : node.depth === 1 ? '600' : '500';
 
-    if (vertical) {
-      // ── Outlined "button" style — used for all nodes in vertical layouts ──
-      const borderColor = node.depth === 0
-        ? o.center.fill
-        : o.colors[node.colorIdx];
-      const textColor = node.depth === 0
-        ? o.center.fill
-        : o.colors[node.colorIdx];
-      const fontWeight = node.depth === 0 ? '700' : node.depth === 1 ? '600' : '500';
-      const strokeW  = node.depth === 0 ? '2.5' : '2';
-      // Pill when single-line; rounded rect when multi-line
-      const rx = node.lines.length === 1 ? node.height / 2 : 10;
-      const filter = node.depth === 0
-        ? 'url(#mm-shadow-center)'
-        : node.depth === 1 ? 'url(#mm-shadow-branch)' : '';
+    // ── Classic horizontal layout (original style, unchanged) ──
+    if ((theme === 'classic' || theme === 'ghost' || theme === 'underline' || theme === 'baseline') && !vertical) {
+      if (theme === 'classic' && node.depth === 0) {
+        // Classic: solid dark center
+        const rect = svgEl('rect', {
+          x: node.x - node.width / 2, y: node.y - node.height / 2,
+          width: node.width, height: node.height,
+          rx: o.center.radius, ry: o.center.radius,
+          fill: o.center.fill, filter: 'url(#mm-shadow-center)',
+        });
+        g.appendChild(rect);
+        g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.center.color, '700'));
+        if (hasLink) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.7)'));
+
+      } else if (theme === 'classic') {
+        // ── Classic: solid pill for depth 1, transparent+underline for depth 2+ ──
+        if (node.depth === 1) {
+          const rx = node.lines.length === 1 ? node.height / 2 : 10;
+          const rect = svgEl('rect', {
+            x: node.x - node.width / 2, y: node.y - node.height / 2,
+            width: node.width, height: node.height,
+            rx: rx, ry: rx, fill: color, filter: 'url(#mm-shadow-branch)',
+          });
+          g.appendChild(rect);
+          g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.branch.color, '600'));
+          if (hasLink) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.8)'));
+        } else {
+          const bg = svgEl('rect', {
+            x: node.x - node.width / 2, y: node.y - node.height / 2,
+            width: node.width, height: node.height,
+            rx: 3, ry: 3, fill: color, opacity: hasLink ? '0.14' : '0.08',
+          });
+          g.appendChild(bg);
+          const underline = svgEl('line', {
+            x1: node.x - node.width / 2, y1: node.y + node.height / 2,
+            x2: node.x + node.width / 2, y2: node.y + node.height / 2,
+            stroke: color, 'stroke-width': '1.8', 'stroke-linecap': 'round',
+          });
+          g.appendChild(underline);
+          g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, '500'));
+          if (hasLink) g.appendChild(this._makeLinkIcon(node, color));
+        }
+
+      } else if (theme === 'ghost') {
+        // ── Ghost: transparent colored bg on all nodes, no border ──
+        const tintColor = node.depth === 0 ? o.center.fill : color;
+        const bg = svgEl('rect', {
+          x: node.x - node.width / 2, y: node.y - node.height / 2,
+          width: node.width, height: node.height,
+          rx: 3, ry: 3, fill: tintColor, opacity: '0.10',
+        });
+        g.appendChild(bg);
+        g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, fontWeight));
+        if (hasLink) g.appendChild(this._makeLinkIcon(node, tintColor));
+
+      } else {
+        // ── Underline / Baseline: optional transparent bg + bottom border ──
+        const tintColor = node.depth === 0 ? o.center.fill : color;
+        if (theme === 'underline') {
+          const bg = svgEl('rect', {
+            x: node.x - node.width / 2, y: node.y - node.height / 2,
+            width: node.width, height: node.height,
+            rx: 3, ry: 3, fill: tintColor, opacity: '0.10',
+          });
+          g.appendChild(bg);
+        }
+        const border = svgEl('line', {
+          x1: node.x - node.width / 2, y1: node.y + node.height / 2,
+          x2: node.x + node.width / 2, y2: node.y + node.height / 2,
+          stroke: tintColor, 'stroke-width': node.depth === 0 ? '2.5' : '1.8', 'stroke-linecap': 'round',
+        });
+        g.appendChild(border);
+        g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, fontWeight));
+        if (hasLink) g.appendChild(this._makeLinkIcon(node, tintColor));
+      }
+
+    // ── Themed styles (apply to all nodes, both vertical and horizontal) ──
+    } else if (theme === 'minimal') {
+      // No box — just colored text, slightly larger for center
+      const textColor = node.depth === 0 ? o.center.fill : color;
+      const fw = fontWeight;
+      g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, textColor, fw));
+      if (hasLink) g.appendChild(this._makeLinkIcon(node, textColor));
+
+    } else {
+      // All box-based themes: outline, solid, solid-sharp, outline-sharp
+      const isSharp   = theme === 'solid-sharp' || theme === 'outline-sharp';
+      const isSolid   = theme === 'solid'        || theme === 'solid-sharp';
+      const isOutline = theme === 'outline'       || theme === 'outline-sharp';
+
+      // Corner radius: pill for center/branch single-line, rounded rect for multiline, 0 for sharp
+      let rx;
+      if (isSharp) {
+        rx = 0;
+      } else if (node.depth <= 1 && node.lines.length === 1) {
+        rx = node.height / 2; // pill
+      } else {
+        rx = 10;
+      }
+
+      const fill        = isSolid   ? color : '#FFFFFF';
+      const stroke      = isOutline ? color : 'none';
+      const strokeW     = node.depth === 0 ? '2.5' : '2';
+      const textColor   = isSolid   ? '#FFFFFF' : color;
+      const filter      = node.depth === 0 ? 'url(#mm-shadow-center)'
+                        : node.depth === 1 ? 'url(#mm-shadow-branch)' : '';
 
       const rect = svgEl('rect', {
-        x: node.x - node.width / 2,
-        y: node.y - node.height / 2,
-        width: node.width,
-        height: node.height,
-        rx: rx,
-        ry: rx,
-        fill: '#FFFFFF',
-        stroke: borderColor,
-        'stroke-width': strokeW,
+        x: node.x - node.width / 2, y: node.y - node.height / 2,
+        width: node.width, height: node.height,
+        rx: rx, ry: rx, fill: fill,
+        stroke: stroke, 'stroke-width': strokeW,
       });
       if (filter) rect.setAttribute('filter', filter);
       g.appendChild(rect);
       g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, textColor, fontWeight));
-      if (hasLink) g.appendChild(this._makeLinkIcon(node, borderColor));
-
-    } else if (node.depth === 0) {
-      // ── Center node (horizontal layouts) ─────────────────────────
-      const rect = svgEl('rect', {
-        x: node.x - node.width / 2,
-        y: node.y - node.height / 2,
-        width: node.width,
-        height: node.height,
-        rx: o.center.radius,
-        ry: o.center.radius,
-        fill: o.center.fill,
-        filter: 'url(#mm-shadow-center)',
-      });
-      g.appendChild(rect);
-      g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.center.color, '700'));
-      if (hasLink) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.7)'));
-
-    } else if (node.depth === 1) {
-      // ── Branch node (pill / rounded rect) ────────────────────────
-      const color = o.colors[node.colorIdx];
-      const rx = node.lines.length === 1 ? node.height / 2 : 10;
-      const rect = svgEl('rect', {
-        x: node.x - node.width / 2,
-        y: node.y - node.height / 2,
-        width: node.width,
-        height: node.height,
-        rx: rx,
-        ry: rx,
-        fill: color,
-        filter: 'url(#mm-shadow-branch)',
-      });
-      g.appendChild(rect);
-      g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.branch.color, '600'));
-      if (hasLink) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.8)'));
-
-    } else {
-      // ── Leaf node (underline style) ───────────────────────────────
-      const color = o.colors[node.colorIdx];
-
-      const bg = svgEl('rect', {
-        x: node.x - node.width / 2,
-        y: node.y - node.height / 2,
-        width: node.width,
-        height: node.height,
-        rx: 3,
-        ry: 3,
-        fill: color,
-        opacity: hasLink ? '0.14' : '0.08',
-      });
-      g.appendChild(bg);
-
-      const underline = svgEl('line', {
-        x1: node.x - node.width / 2,
-        y1: node.y + node.height / 2,
-        x2: node.x + node.width / 2,
-        y2: node.y + node.height / 2,
-        stroke: color,
-        'stroke-width': '1.8',
-        'stroke-linecap': 'round',
-      });
-      g.appendChild(underline);
-
-      g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, '500'));
-      if (hasLink) g.appendChild(this._makeLinkIcon(node, color));
+      if (hasLink) g.appendChild(this._makeLinkIcon(node, isSolid ? 'rgba(255,255,255,0.8)' : color));
     }
 
     // ── Hover ──
@@ -819,7 +855,7 @@
         : 'default';
     });
 
-    // ── Link click (only fires if not a drag) ──
+    // ── Link click ──
     if (hasLink) {
       g.addEventListener('click', (e) => {
         if (this._dragMoved) return;
@@ -997,6 +1033,33 @@
     return el;
   };
 
+  /**
+   * Returns the Y coordinate on a node where a horizontal edge should connect.
+   * @param {Object} node
+   * @param {'start'|'end'} role  'start' = leaving the node, 'end' = arriving at the node
+   * @returns {number}
+   *
+   * Connection point strategy (horizontal layouts only):
+   *   classic    — leaf nodes (depth > 1) connect at the bottom baseline (underline style)
+   *   ghost      — all nodes connect at vertical center
+   *   underline  — all nodes connect at bottom (continuous with the bottom border)
+   *   baseline   — all nodes connect at bottom (continuous with the bottom border)
+   *   all others — all nodes connect at vertical center
+   */
+  Porphyry.prototype._nodeEdgeAnchorY = function (node, role) {
+    const theme = this.options.theme || 'classic';
+    if (theme === 'underline' || theme === 'baseline') {
+      // Bottom anchor — makes edges flow continuously from the border line
+      return node.y + node.height / 2;
+    }
+    if (theme === 'classic' && node.depth > 1) {
+      // Classic leaf nodes anchor at bottom to match the underline
+      return node.y + node.height / 2;
+    }
+    // All other themes: vertical center
+    return node.y;
+  };
+
   Porphyry.prototype._drawEdge = function (parent, child) {
     const o = this.options;
     const layout = o.layout;
@@ -1014,16 +1077,15 @@
     let x1, y1;
     if (parent.depth === 0) {
       x1 = dir === 'right' ? parent.width / 2 : -parent.width / 2;
-      y1 = parent.y;
+      y1 = this._nodeEdgeAnchorY(parent, 'start');
     } else {
       x1 = dir === 'right' ? parent.x + parent.width / 2 : parent.x - parent.width / 2;
-      // Use vertical center for pill nodes (depth 1), bottom baseline for deeper underline nodes
-      y1 = parent.depth === 1 ? parent.y : parent.y + parent.height / 2;
+      y1 = this._nodeEdgeAnchorY(parent, 'start');
     }
 
-    // End point (child's near edge at its baseline)
+    // End point (child's near edge)
     const x2 = dir === 'right' ? child.x - child.width / 2 : child.x + child.width / 2;
-    const y2 = child.depth > 1 ? child.y + child.height / 2 : child.y;
+    const y2 = this._nodeEdgeAnchorY(child, 'end');
 
     // S-curve bezier
     const mx = (x1 + x2) / 2;
