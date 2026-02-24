@@ -2,7 +2,7 @@
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
  * @version 1.4.0
- * @license GPL-3.0
+ * @license MIT
  */
 (function (global) {
   'use strict';
@@ -267,7 +267,10 @@
       'background:#fff', 'border:1px solid #E2E8F0', 'border-radius:10px',
       'padding:4px 9px', 'box-shadow:0 2px 10px rgba(0,0,0,0.08)',
       'z-index:10', 'font-family:system-ui,sans-serif',
+      'opacity:0.25', 'transition:opacity 0.2s',
     ].join(';');
+    hud.addEventListener('mouseenter', () => { hud.style.opacity = '1'; });
+    hud.addEventListener('mouseleave', () => { hud.style.opacity = '0.25'; });
 
     const btnStyle = [
       'width:26px', 'height:26px', 'border:1px solid #E2E8F0', 'border-radius:6px',

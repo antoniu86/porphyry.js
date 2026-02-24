@@ -247,11 +247,30 @@
     .interact-toggle:hover { color: var(--text); }
 
     /* ── Layout ── */
-    .workspace {
+    main {
       display: flex;
+      flex-direction: column;
       flex: 1;
+      min-height: 0;
       overflow: hidden;
     }
+
+    .workspace {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .workspace-body {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .workspace.hidden  { display: none; }
 
     /* ── Sidebar ── */
     .sidebar {
@@ -277,13 +296,18 @@
       width: 0 !important;
       min-width: 0 !important;
       border-right: none;
+      overflow: hidden;
     }
 
     /* Toggle button on the sidebar/canvas boundary */
+    .workspace-body {
+      position: relative;
+    }
+
     .sidebar-toggle {
       position: absolute;
       top: 50%;
-      right: -13px;
+      left: 287px;
       transform: translateY(-50%);
       z-index: 20;
       width: 26px;
@@ -298,11 +322,11 @@
       justify-content: center;
       font-size: 11px;
       color: var(--muted);
-      transition: color 0.15s, background 0.15s, right 0.22s ease;
+      transition: color 0.15s, background 0.15s, left 0.22s ease;
       flex-shrink: 0;
     }
     .sidebar-toggle:hover { background: #EBF4FF; color: var(--accent); border-color: var(--accent); }
-    .sidebar.collapsed + .canvas-wrap .sidebar-toggle { right: auto; left: -13px; }
+    .sidebar-toggle.collapsed { left: -13px; }
 
     /* Chevron button inside Examples header */
     .examples-toggle {
@@ -443,13 +467,13 @@
     .docs-panel {
       display: none;
       flex: 1;
+      min-height: 0;
       overflow-y: auto;
       background: var(--bg);
-      padding: 48px 0 80px;
+      padding: 48px 0 0;
     }
 
     .docs-panel.active { display: block; }
-    .workspace.hidden  { display: none; }
 
     .docs-content {
       max-width: 760px;
@@ -676,14 +700,18 @@
   </a>
 </header>
 
+<!-- ── Main (workspace + docs share this flex:1 container) ── -->
+<main>
+
 <!-- ── Workspace ── -->
 <div class="workspace">
-
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
+  <div class="workspace-body">
     <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle sidebar">
       <svg width="8" height="12" viewBox="0 0 8 12" fill="none"><path d="M6 1L1 6l5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
 
     <div class="sidebar-header">
       Examples
@@ -748,6 +776,7 @@
     </div>
     <div id="porphyry-container"></div>
   </div>
+  </div><!-- /.workspace-body -->
 </div>
 
 <!-- ── Docs Panel ── -->
@@ -779,6 +808,7 @@
           <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.0</span>
           <span style="background:#F0FFF4;color:#276749;padding:2px 8px;border-radius:99px">Zero dependencies</span>
           <span style="background:#FAF5FF;color:#553C9A;padding:2px 8px;border-radius:99px">SVG-based</span>
+          <span style="background:#FFFBEB;color:#92400E;padding:2px 8px;border-radius:99px">MIT license</span>
         </div>
       </div>
     </div>
@@ -938,6 +968,7 @@
         <tr><td>interactions.collapse</td><td>false</td><td>Show +/− toggle buttons on nodes to expand/collapse subtrees.</td></tr>
         <tr><td>interactions.hud</td><td>false</td><td>Inject a zoom HUD (−, level %, +, fit) into the bottom-right of the container.</td></tr>
         <tr><td>interactions.tips</td><td>false</td><td>Inject a hint bar at the bottom-center describing active interactions.</td></tr>
+        <tr><td>interactions.download</td><td>false</td><td>Add a download-as-SVG button. When <code>hud: true</code> it appears inside the HUD; otherwise a standalone button is injected in the bottom-right corner.</td></tr>
         <tr><td>minZoom</td><td>0.08</td><td>Minimum zoom scale (when zoom is enabled).</td></tr>
         <tr><td>maxZoom</td><td>4</td><td>Maximum zoom scale (when zoom is enabled).</td></tr>
         <tr><td>zoomSensitivity</td><td>0.12</td><td>Scroll-wheel zoom speed per tick.</td></tr>
@@ -1022,12 +1053,13 @@ map.<span class="fn">_renderInternal</span>(<span class="nm">false</span>); <spa
         <tr><td>render(data)</td><td>Parse <code>data</code>, lay out and draw the full tree. <strong>Clears all collapse state.</strong> Automatically calls <code>fit()</code> after the first paint.</td></tr>
         <tr><td>fit()</td><td>Scale and translate the graph so it fits neatly inside the container, respecting <code>fitPadding</code>.</td></tr>
         <tr><td>reset()</td><td>Reset pan and zoom to 1:1, centered.</td></tr>
+        <tr><td>downloadSVG(filename?)</td><td>Download the current mind map as a standalone SVG file. <code>filename</code> defaults to <code>'mindmap.svg'</code>. The export strips the pan/zoom transform and recalculates a clean viewBox from content bounds.</td></tr>
         <tr><td>_renderInternal(autoFit)</td><td>Re-layout and redraw while <strong>preserving collapse state</strong>. Pass <code>false</code> to skip re-fitting (e.g. after a collapse toggle or layout switch).</td></tr>
         <tr><td>_rebindInteractions()</td><td>Call after mutating <code>options.interactions</code> at runtime. Strips old event listeners, re-attaches new ones, and updates cursor and tips text.</td></tr>
       </table>
 <pre><span class="kw">const</span> map = <span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, {
   layout: <span class="st">'auto'</span>,
-  interactions: { pan: <span class="nm">true</span>, zoom: <span class="nm">true</span>, collapse: <span class="nm">true</span>, hud: <span class="nm">true</span>, tips: <span class="nm">true</span> },
+  interactions: { pan: <span class="nm">true</span>, zoom: <span class="nm">true</span>, collapse: <span class="nm">true</span>, hud: <span class="nm">true</span>, tips: <span class="nm">true</span>, download: <span class="nm">true</span> },
   colors: [<span class="st">'#E05C5C'</span>, <span class="st">'#4A90D9'</span>, <span class="st">'#4CAF82'</span>],
   branchSpacingX: <span class="nm">200</span>,
 });
@@ -1041,6 +1073,28 @@ map.<span class="fn">render</span>(myData);
 <span class="cm">// Toggle pan off at runtime</span>
 map.options.interactions.pan = <span class="nm">false</span>;
 map.<span class="fn">_rebindInteractions</span>();</pre>
+    </div>
+
+    <!-- SVG Download -->
+    <div class="docs-section">
+      <h2>SVG Download</h2>
+      <p>The <code>downloadSVG()</code> method exports the current mind map as a clean, self-contained SVG file that opens in browsers, Illustrator, Inkscape, and any SVG editor.</p>
+      <p>There are three ways to expose it depending on your use case:</p>
+<pre><span class="cm">// Option 1 — download icon appears inside the HUD alongside zoom controls</span>
+<span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, {
+  interactions: { hud: <span class="nm">true</span>, download: <span class="nm">true</span> }
+});
+
+<span class="cm">// Option 2 — standalone button injected in the bottom-right corner</span>
+<span class="kw">new</span> <span class="fn">Porphyry</span>(<span class="st">'#map'</span>, {
+  interactions: { download: <span class="nm">true</span> }
+});
+
+<span class="cm">// Option 3 — no button, wire your own trigger anywhere on the page</span>
+document.<span class="fn">getElementById</span>(<span class="st">'my-btn'</span>).addEventListener(<span class="st">'click'</span>, () => {
+  map.<span class="fn">downloadSVG</span>(<span class="st">'my-diagram.svg'</span>); <span class="cm">// filename is optional</span>
+});</pre>
+      <div class="callout">System fonts (<code>system-ui</code>, <code>sans-serif</code>) are referenced by name in the export — text renders correctly on any machine that has them, which is effectively everywhere. The pan/zoom transform is stripped so the file always opens at the correct size regardless of the viewer state.</div>
     </div>
 
     <!-- Node Links -->
@@ -1086,6 +1140,7 @@ map.<span class="fn">_rebindInteractions</span>();</pre>
   </div>
 </div>
 
+</main>
 <footer>Created by <a href="https://www.temian.ro" target="_blank" rel="noopener noreferrer">antoniu</a></footer>
 
 <script src="porphyry.min.js"></script>
@@ -1525,6 +1580,7 @@ const sidebarArrow = sidebarBtn.querySelector('path');
 
 sidebarBtn.addEventListener('click', () => {
   const collapsed = sidebarEl.classList.toggle('collapsed');
+  sidebarBtn.classList.toggle('collapsed', collapsed);
   // Flip arrow direction: ‹ when open, › when closed
   sidebarArrow.setAttribute('d', collapsed
     ? 'M2 1l5 5-5 5'   // pointing right (re-open)

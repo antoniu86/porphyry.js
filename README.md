@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.4.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-GPL--v3-purple)](#)
+[![version](https://img.shields.io/badge/version-1.4.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
 
 ---
 
@@ -383,4 +383,4 @@ The floor is 45 % of the configured defaults. Vertical layouts are unaffected.
 
 ## License
 
-GNU General Public License v3.0 — see [LICENSE](LICENSE) for details.
+MIT — see [LICENSE](LICENSE) for details.
