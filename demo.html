@@ -79,7 +79,7 @@
         </ul>
     </div>
 
-    <script src="porphyry.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
 
     <script>
         // Your JSON data assigned to a variable for easy use
@@ -194,7 +194,7 @@
         // document.getElementById('map')
         // -------------------------------------------------------------
 
-        const map = new Porphyry('#map', { spacing: 0.4 });
+        const map = new Porphyry('#map', { spacing: 0.4, theme: 'underline' });
         map.render(solarSystemData);
         
         console.log("Mind map data loaded successfully:", solarSystemData);

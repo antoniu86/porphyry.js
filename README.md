@@ -27,14 +27,35 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 
 > See the [live demo](https://antoniu86.github.io/porphyry.js/demo.html) to explore all features interactively.
 
-```html
-<!-- 1. Include the library -->
-<script src="porphyry.js"></script>
+### Via CDN (recommended)
 
-<!-- 2. Give it a container with explicit dimensions -->
+The fastest way to get started — no download or build step needed:
+
+```html
+<!-- Latest release via jsDelivr -->
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
+
+<!-- Pin to a specific version -->
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.0/porphyry.min.js"></script>
+```
+
+### Self-hosted
+
+Download `porphyry.min.js` (or `porphyry.js` for the commented source) and include it directly:
+
+```html
+<script src="porphyry.min.js"></script>
+```
+
+### Example
+
+```html
+<!-- Include from CDN -->
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.0/porphyry.min.js"></script>
+
+<!-- Give it a container with explicit dimensions -->
 <div id="map" style="width: 100%; height: 500px;"></div>
 
-<!-- 3. Initialize and render -->
 <script>
   const map = new Porphyry('#map');
   map.render({
