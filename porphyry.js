@@ -880,6 +880,14 @@
             rx: 3, ry: 3, fill: tintColor, opacity: '0.10',
           });
           g.appendChild(bg);
+        } else {
+          // baseline: invisible hit-area rect so click events register
+          const hitRect = svgEl('rect', {
+            x: node.x - node.width / 2, y: node.y - node.height / 2,
+            width: node.width, height: node.height,
+            fill: 'transparent',
+          });
+          g.appendChild(hitRect);
         }
         const border = svgEl('line', {
           x1: node.x - node.width / 2, y1: node.y + node.height / 2,
@@ -896,6 +904,13 @@
       // No box — just colored text, slightly larger for center
       const textColor = node.depth === 0 ? o.center.fill : color;
       const fw = fontWeight;
+      // Invisible hit-area rect so click events register with no visible background
+      const hitRect = svgEl('rect', {
+        x: node.x - node.width / 2, y: node.y - node.height / 2,
+        width: node.width, height: node.height,
+        fill: 'transparent',
+      });
+      g.appendChild(hitRect);
       g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, textColor, fw));
       if (hasLink) g.appendChild(this._makeLinkIcon(node, textColor));
 
