@@ -883,7 +883,7 @@
     });
 
     const icon = svgEl('text', {
-      x: bx, y: by,
+      x: bx, y: by - 1,
       'text-anchor': 'middle',
       'dominant-baseline': 'central',
       'font-size': '13',
