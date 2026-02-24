@@ -2,6 +2,7 @@
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
  * @version 1.4.0
+ * @license GPL-3.0
  */
 (function (global) {
   'use strict';
@@ -90,6 +91,7 @@
       hud:      false,  // zoom level indicator + fit/+/- buttons (injected into container)
       tips:     false,  // keyboard/mouse hint bar (injected into container)
       collapse: false,  // +/- toggle buttons to expand/collapse subtrees
+      download: false,  // download icon in the HUD — calls downloadSVG()
     },
     // Animation
     animationDuration: 350,
@@ -250,6 +252,7 @@
 
     if (this.options.interactions.hud)  this._buildHUD();
     if (this.options.interactions.tips) this._buildTips();
+    if (this.options.interactions.download && !this.options.interactions.hud) this._buildDownloadBtn();
   };
 
   /** Inject the zoom HUD (−, level, +, fit) into the container. */
@@ -294,8 +297,90 @@
     hud.appendChild(makeBtn('+', 'Zoom in',  () => self._hudZoom(1.25)));
     hud.appendChild(makeBtn('⤢', 'Fit to view', () => self.fit()));
 
+    if (this.options.interactions.download) {
+      const sep = document.createElement('span');
+      sep.style.cssText = 'width:1px;height:18px;background:#E2E8F0;margin:0 2px';
+      hud.appendChild(sep);
+
+      const dlBtn = document.createElement('button');
+      dlBtn.title = 'Download as SVG';
+      dlBtn.style.cssText = btnStyle;
+      dlBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 1v7M7 8l-3-3M7 8l3-3M1 10.5v1A1.5 1.5 0 0 0 2.5 13h9A1.5 1.5 0 0 0 13 11.5v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      dlBtn.addEventListener('click', () => self.downloadSVG());
+      dlBtn.addEventListener('mouseenter', () => { dlBtn.style.background = '#EBF4FF'; dlBtn.style.color = '#4A90D9'; dlBtn.style.borderColor = '#4A90D9'; });
+      dlBtn.addEventListener('mouseleave', () => { dlBtn.style.background = '#F7F8FC'; dlBtn.style.color = '#1A202C'; dlBtn.style.borderColor = '#E2E8F0'; });
+      hud.appendChild(dlBtn);
+    }
+
     this.container.appendChild(hud);
     this._hud = hud;
+  };
+
+  /**
+   * Download the current mind map as an SVG file.
+   * Can be called programmatically from anywhere — wire it to any button in your UI.
+   * @param {string} [filename='mindmap.svg'] — the name of the downloaded file
+   */
+  Porphyry.prototype.downloadSVG = function (filename) {
+    if (!this.svg) return;
+    filename = filename || 'mindmap.svg';
+
+    // Clone so we don't mutate the live SVG
+    const clone = this.svg.cloneNode(true);
+
+    // Ensure xmlns is present for standalone SVG files
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+    // Use the inner group's bounding box for clean fit, ignoring pan/zoom state
+    const innerLive = this.svg.querySelector('g');
+    const bbox = innerLive ? innerLive.getBBox() : null;
+    const pad = this.options.fitPadding;
+    if (bbox && bbox.width > 0) {
+      clone.setAttribute('viewBox', [
+        bbox.x - pad, bbox.y - pad,
+        bbox.width + pad * 2, bbox.height + pad * 2,
+      ].join(' '));
+      clone.setAttribute('width',  bbox.width  + pad * 2);
+      clone.setAttribute('height', bbox.height + pad * 2);
+    }
+
+    // Reset any pan/zoom transform on the inner group so the export is clean
+    const inner = clone.querySelector('[transform]');
+    if (inner) inner.removeAttribute('transform');
+
+    const serializer = new XMLSerializer();
+    const svgStr = serializer.serializeToString(clone);
+    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  /** Inject a standalone download button when hud is disabled but download is enabled. */
+  Porphyry.prototype._buildDownloadBtn = function () {
+    const self = this;
+    const btn = document.createElement('button');
+    btn.title = 'Download as SVG';
+    btn.style.cssText = [
+      'position:absolute', 'bottom:14px', 'right:14px',
+      'width:32px', 'height:32px', 'border-radius:8px',
+      'background:#fff', 'border:1px solid #E2E8F0',
+      'box-shadow:0 2px 10px rgba(0,0,0,0.08)',
+      'cursor:pointer', 'z-index:10',
+      'display:flex', 'align-items:center', 'justify-content:center',
+      'color:#1A202C', 'transition:all 0.12s', 'padding:0',
+    ].join(';');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 1v7M7 8l-3-3M7 8l3-3M1 10.5v1A1.5 1.5 0 0 0 2.5 13h9A1.5 1.5 0 0 0 13 11.5v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    btn.addEventListener('click', () => self.downloadSVG());
+    btn.addEventListener('mouseenter', () => { btn.style.background = '#EBF4FF'; btn.style.color = '#4A90D9'; btn.style.borderColor = '#4A90D9'; });
+    btn.addEventListener('mouseleave', () => { btn.style.background = '#fff'; btn.style.color = '#1A202C'; btn.style.borderColor = '#E2E8F0'; });
+    this.container.appendChild(btn);
   };
 
   /** Zoom by a factor, centered on the container midpoint. */

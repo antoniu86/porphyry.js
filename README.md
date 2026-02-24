@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.4.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+[![version](https://img.shields.io/badge/version-1.4.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-GPL--v3-purple)](#)
 
 ---
 
@@ -222,6 +222,7 @@ All interactions are **off by default** for clean embedding. Opt in explicitly t
 | `interactions.collapse` | `false` | Show +/− toggle buttons on nodes to expand/collapse subtrees. |
 | `interactions.hud` | `false` | Inject a zoom HUD (−, %, +, fit) into the bottom-right of the container. |
 | `interactions.tips` | `false` | Inject a hint bar at the bottom-center describing active interactions. |
+| `interactions.download` | `false` | Add a download-as-SVG button. When `hud: true` it appears inside the HUD; otherwise a standalone button is injected in the bottom-right corner. |
 | `minZoom` | `0.08` | Minimum zoom scale. |
 | `maxZoom` | `4` | Maximum zoom scale. |
 | `zoomSensitivity` | `0.12` | Scroll-wheel zoom speed per tick. |
@@ -277,6 +278,7 @@ map._renderInternal(false);   // re-render without re-fitting
 | `render(data)` | Parse data, lay out and draw the full tree. Clears all collapse state. Auto-calls `fit()` after the first paint. |
 | `fit()` | Scale and pan so the graph fits neatly inside the container, respecting `fitPadding`. |
 | `reset()` | Reset pan and zoom to 1:1, centered. |
+| `downloadSVG(filename?)` | Download the current mind map as a standalone SVG file. `filename` defaults to `'mindmap.svg'`. The export strips the pan/zoom transform and recalculates a clean viewBox from the content bounds. |
 | `_renderInternal(autoFit)` | Re-layout and redraw while preserving collapse state. Pass `false` to skip re-fitting (e.g. after a collapse toggle). |
 | `_rebindInteractions()` | Call after mutating `options.interactions` at runtime. Re-attaches event listeners and refreshes the cursor and tips text. |
 
@@ -285,7 +287,7 @@ map._renderInternal(false);   // re-render without re-fitting
 ```js
 const map = new Porphyry('#map', {
   layout: 'auto',
-  interactions: { pan: true, zoom: true, collapse: true, hud: true, tips: true },
+  interactions: { pan: true, zoom: true, collapse: true, hud: true, tips: true, download: true },
   colors: ['#E05C5C', '#4A90D9', '#4CAF82'],
   branchSpacingX: 200,
 });
@@ -300,6 +302,31 @@ map.render(myData);
 map.options.interactions.pan = false;
 map._rebindInteractions();
 ```
+
+---
+
+## SVG Download
+
+The `downloadSVG()` method exports the current mind map as a clean, self-contained SVG file.
+
+```js
+// Option 1 — enable via the HUD (download icon appears alongside zoom controls)
+const map = new Porphyry('#map', {
+  interactions: { hud: true, download: true }
+});
+
+// Option 2 — standalone button in the bottom-right corner (no zoom controls needed)
+const map = new Porphyry('#map', {
+  interactions: { download: true }
+});
+
+// Option 3 — programmatic, wire to any button in your own UI
+document.getElementById('my-btn').addEventListener('click', () => {
+  map.downloadSVG('my-diagram.svg');  // filename is optional
+});
+```
+
+The exported file opens correctly in browsers, Illustrator, Inkscape and other SVG editors. System fonts (`system-ui`, `sans-serif`) are referenced by name — text renders on any machine that has them, which is effectively everywhere.
 
 ---
 
@@ -356,4 +383,4 @@ The floor is 45 % of the configured defaults. Vertical layouts are unaffected.
 
 ## License
 
-MIT
+GNU General Public License v3.0 — see [LICENSE](LICENSE) for details.
