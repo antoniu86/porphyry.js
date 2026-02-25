@@ -1720,14 +1720,17 @@ function syncThemeDropdown(layout) {
   const sel = document.getElementById('theme-select');
   const isVertical = layout === 'up' || layout === 'down';
   const themes = isVertical ? THEMES_VERTICAL : THEMES_HORIZONTAL;
-  const current = sel.value;
+  // Use mm.options.theme as source of truth so returning to horizontal
+  // correctly restores the original theme even after a vertical fallback.
+  const current = mm.options.theme;
   sel.innerHTML = themes.map(t =>
     `<option value="${t.value}"${t.value === current ? ' selected' : ''}>${t.label}</option>`
   ).join('');
-  // If current theme was removed (classic not in vertical list), fallback
-  if (!themes.find(t => t.value === sel.value)) {
+  // If the current theme isn't available in this layout (e.g. classic in vertical),
+  // select the first available option but leave mm.options.theme untouched so
+  // it can be restored when switching back to a horizontal layout.
+  if (!themes.find(t => t.value === current)) {
     sel.value = themes[0].value;
-    mm.options.theme = sel.value;
   }
 }
 
