@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.4.2
+ * @version 1.4.3
  * @license MIT
  */
 (function (global) {
@@ -38,6 +38,15 @@
     //   'down'  — tree grows downward; siblings spread horizontally
     //   'up'    — tree grows upward;   siblings spread horizontally
     layout: 'auto',
+    // Where first-level branch edges connect on the center node (horizontal layouts only).
+    //   'side'     — edges exit from the left/right walls of the center node (default)
+    //   'vertical' — edges exit from the top or bottom center of the root node;
+    //                top vs bottom is chosen automatically per branch based on its
+    //                vertical position relative to the center. Branches above the
+    //                center connect from the top, branches below from the bottom.
+    //                This decouples branch placement from the center node's width,
+    //                so the center can grow wide without pushing branches further apart.
+    centerEdge: 'side',
     // Spacing (horizontal layouts)
     branchSpacingX: 220,   // horizontal gap between depth levels
     subSpacingX: 170,      // horizontal gap for sub-levels
@@ -738,10 +747,12 @@
     if (!branches.length) return;
 
     const sp = this._sp;
-    // Left-edge (right side) or right-edge (left side) of center node
+    const o = this.options;
+    // When centerEdge is 'vertical', branches are positioned from root center
+    // (not root edge) so the center node width doesn't push branches further out.
     const edgeX = dir === 'right'
-      ? root.width / 2 + sp.branchSpacingX
-      : -(root.width / 2 + sp.branchSpacingX);
+      ? (o.centerEdge === 'side' ? root.width / 2 + sp.branchSpacingX : sp.branchSpacingX)
+      : (o.centerEdge === 'side' ? -(root.width / 2 + sp.branchSpacingX) : -sp.branchSpacingX);
 
     const heights = branches.map(c => this._subtreeHeight(c));
     const totalH = heights.reduce((a, b) => a + b, 0);
@@ -1184,8 +1195,17 @@
     // Determine start point (on parent's near edge)
     let x1, y1;
     if (parent.depth === 0) {
-      x1 = dir === 'right' ? parent.width / 2 : -parent.width / 2;
-      y1 = this._nodeEdgeAnchorY(parent, 'start');
+      const ce = o.centerEdge || 'side';
+      if (ce === 'vertical') {
+        // Auto-pick top or bottom based on where the branch sits relative to center.
+        // Branches at or above center connect from the top; below center from the bottom.
+        x1 = 0;
+        y1 = child.y <= 0 ? -parent.height / 2 : parent.height / 2;
+      } else {
+        // 'side' — default: exit from left/right wall of center node
+        x1 = dir === 'right' ? parent.width / 2 : -parent.width / 2;
+        y1 = this._nodeEdgeAnchorY(parent, 'start');
+      }
     } else {
       x1 = dir === 'right' ? parent.x + parent.width / 2 : parent.x - parent.width / 2;
       y1 = this._nodeEdgeAnchorY(parent, 'start');
@@ -1195,9 +1215,17 @@
     const x2 = dir === 'right' ? child.x - child.width / 2 : child.x + child.width / 2;
     const y2 = this._nodeEdgeAnchorY(child, 'end');
 
-    // S-curve bezier
+    // S-curve bezier.
+    // For vertical center-edge connections the curve departs vertically (toward
+    // the branch's Y level) then sweeps sideways to the child's near edge.
+    // For standard side connections both control points share the midpoint X,
+    // so the curve departs and arrives horizontally.
+    const isVerticalFan = parent.depth === 0 && (o.centerEdge || 'side') === 'vertical';
     const mx = (x1 + x2) / 2;
-    const d = `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
+    const my = (y1 + y2) / 2;
+    const d = isVerticalFan
+      ? `M ${x1} ${y1} C ${x1} ${my}, ${mx} ${y2}, ${x2} ${y2}`
+      : `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
 
     const strokeW = parent.depth === 0
       ? o.edgeWidth.root

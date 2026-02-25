@@ -726,7 +726,7 @@
       </svg>
       Porphyry.js
     </div>
-    <span class="badge">v1.4.2</span>
+    <span class="badge">v1.4.3</span>
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="demo">Demo</button>
       <button class="tab-btn"        data-tab="docs">Docs</button>
@@ -779,6 +779,12 @@
         <button class="toggle-btn" data-layout="right" title="All branches right">Right →</button>
         <button class="toggle-btn" data-layout="down"  title="Tree grows downward">↓ Down</button>
         <button class="toggle-btn" data-layout="up"    title="Tree grows upward">↑ Up</button>
+      </div>
+      <div class="separator"></div>
+      <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px">CENTER EDGE</span>
+      <div class="layout-toggle" id="center-edge-toggle">
+        <button class="toggle-btn active" data-edge="side"     title="Edges exit the left/right sides of the center node">⇔ Side</button>
+        <button class="toggle-btn"        data-edge="vertical" title="Edges fan out from the top/bottom of the center node, auto-picked per branch">⇕ Fan</button>
       </div>
       <div class="separator"></div>
       <label class="interact-toggle">
@@ -843,7 +849,7 @@
         <h1>Porphyry.js</h1>
         <p>A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG. Named after Porphyry of Tyre, the ancient philosopher who introduced the hierarchical <em>tree of categories</em>.</p>
         <div class="docs-hero-badge">
-          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.2</span>
+          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.3</span>
           <span style="background:#F0FFF4;color:#276749;padding:2px 8px;border-radius:99px">Zero dependencies</span>
           <span style="background:#FAF5FF;color:#553C9A;padding:2px 8px;border-radius:99px">SVG-based</span>
           <span style="background:#FFFBEB;color:#92400E;padding:2px 8px;border-radius:99px">MIT license</span>
@@ -863,13 +869,13 @@
 <span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Pin to a specific version --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.2/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Self-hosted</h3>
       <p>Download <code>porphyry.min.js</code> (or <code>porphyry.js</code> for the commented source) and include it directly:</p>
 <pre><span class="kw">&lt;script</span> src=<span class="st">"porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Example</h3>
 <pre><span class="cm">&lt;!-- Include from CDN --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.2/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Give it a container --&gt;</span>
 <span class="kw">&lt;div</span> id=<span class="st">"map"</span> style=<span class="st">"width:100%;height:500px"</span><span class="kw">&gt;&lt;/div&gt;</span>
@@ -937,6 +943,7 @@
       <table class="prop-table">
         <tr><th>Option</th><th>Default</th><th>Description</th></tr>
         <tr><td>layout</td><td>"auto"</td><td>Direction mode. One of <code>"auto"</code>, <code>"left"</code>, <code>"right"</code>, <code>"down"</code>, <code>"up"</code>. See Layout Modes below.</td></tr>
+        <tr><td>centerEdge</td><td>"side"</td><td>Where edges connect on the center node in horizontal layouts. <code>"side"</code> exits the left/right walls. <code>"vertical"</code> fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. With <code>"vertical"</code> the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on <code>"up"</code>/<code>"down"</code> layouts.</td></tr>
         <tr><td>theme</td><td>"classic"</td><td>Visual theme controlling node shapes, fills, borders and edge anchors. See Themes below.</td></tr>
         <tr><td>fitPadding</td><td>20</td><td>Pixels of padding around the graph when auto-fitting to the container.</td></tr>
         <tr><td>lineHeight</td><td>1.45</td><td>Line height multiplier for wrapped text.</td></tr>
@@ -1596,12 +1603,26 @@ EXAMPLES.forEach((ex, i) => {
 document.getElementById('layout-toggle').addEventListener('click', e => {
   const btn = e.target.closest('.toggle-btn');
   if (!btn) return;
-  document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#layout-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   currentLayout = btn.dataset.layout;
   mm.options.layout = currentLayout;
   syncThemeDropdown(currentLayout);
   // Re-render the current JSON
+  const raw = document.getElementById('json-editor').value;
+  try {
+    const data = JSON.parse(raw);
+    mm.render(data);
+  } catch (e) { /* ignore parse errors during toggle */ }
+});
+
+// Center edge toggle
+document.getElementById('center-edge-toggle').addEventListener('click', e => {
+  const btn = e.target.closest('.toggle-btn');
+  if (!btn) return;
+  document.querySelectorAll('#center-edge-toggle .toggle-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  mm.options.centerEdge = btn.dataset.edge;
   const raw = document.getElementById('json-editor').value;
   try {
     const data = JSON.parse(raw);

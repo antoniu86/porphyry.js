@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.4.2-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+[![version](https://img.shields.io/badge/version-1.4.3-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
 
 ---
 
@@ -13,6 +13,7 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 - **Zero dependencies** — pure JavaScript, no build step required
 - **SVG-based** — crisp at any resolution, fully scalable
 - **Five layout modes** — auto-balanced, left, right, down, up
+- **Fan edge mode** — edges fan out from the top/bottom center of the root node, auto-picked per branch; decouples branch placement from center node width
 - **Collapsible branches** — +/− toggle buttons to expand and collapse subtrees
 - **9 built-in themes** — classic, ghost, underline, baseline, outline, solid, solid-sharp, outline-sharp, minimal; smart defaults per layout
 - **Text wrapping** — long labels wrap automatically within a configurable max width
@@ -36,7 +37,7 @@ The fastest way to get started — no download or build step needed:
 <script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
 
 <!-- Pin to a specific version -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.2/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"></script>
 ```
 
 ### Self-hosted
@@ -51,7 +52,7 @@ Download `porphyry.min.js` (or `porphyry.js` for the commented source) and inclu
 
 ```html
 <!-- Include from CDN -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.2/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"></script>
 
 <!-- Give it a container with explicit dimensions -->
 <div id="map" style="width: 100%; height: 500px;"></div>
@@ -127,6 +128,7 @@ new Porphyry(selector, options)
 | Option | Default | Description |
 |---|---|---|
 | `layout` | `"auto"` | Direction mode: `"auto"`, `"left"`, `"right"`, `"down"`, or `"up"`. |
+| `centerEdge` | `"side"` | Where first-level branch edges connect on the center node (horizontal layouts only). `"side"` exits the left/right walls. `"vertical"` fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. With `"vertical"` the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on `"up"`/`"down"` layouts. |
 | `fitPadding` | `20` | Pixels of padding when auto-fitting to the container. |
 | `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
 | `spacing` | `1` | Spacing multiplier applied to all node distances before depth-adaptive scaling. Accepts any value from `0.1` (extremely compact) to `2.0` (very spread out). `1` is the default. |
