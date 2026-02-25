@@ -1,4 +1,4 @@
-# Porphyry.js
+# PorphyryJS
 
 A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG.
 
