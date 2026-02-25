@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.4.3
+ * @version 1.4.4
  * @license MIT
  */
 (function (global) {
@@ -215,6 +215,18 @@
 
     this._buildDOM();
     this._bindPanZoom();
+
+    // Auto-fit whenever the container is resized (e.g. flexible layouts, window resize).
+    // Debounced at 50 ms so rapid resize events don't trigger excessive reflows.
+    if (typeof ResizeObserver !== 'undefined') {
+      const self = this;
+      let _resizeTimer;
+      this._resizeObserver = new ResizeObserver(function () {
+        clearTimeout(_resizeTimer);
+        _resizeTimer = setTimeout(function () { self.fit(); }, 50);
+      });
+      this._resizeObserver.observe(this.container);
+    }
   }
 
   // ── DOM Setup ──────────────────────────────────────────────────────────────
@@ -498,6 +510,17 @@
       this._applyTransform();
     } catch (e) {
       // getBBox can fail in some environments
+    }
+  };
+
+  /**
+   * Tear down the instance: disconnects the ResizeObserver.
+   * Call when removing the container from the DOM.
+   */
+  Porphyry.prototype.destroy = function () {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
     }
   };
 

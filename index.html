@@ -726,7 +726,7 @@
       </svg>
       Porphyry.js
     </div>
-    <span class="badge">v1.4.3</span>
+    <span class="badge">v1.4.4</span>
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="demo">Demo</button>
       <button class="tab-btn"        data-tab="docs">Docs</button>
@@ -849,7 +849,7 @@
         <h1>Porphyry.js</h1>
         <p>A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG. Named after Porphyry of Tyre, the ancient philosopher who introduced the hierarchical <em>tree of categories</em>.</p>
         <div class="docs-hero-badge">
-          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.3</span>
+          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.4</span>
           <span style="background:#F0FFF4;color:#276749;padding:2px 8px;border-radius:99px">Zero dependencies</span>
           <span style="background:#FAF5FF;color:#553C9A;padding:2px 8px;border-radius:99px">SVG-based</span>
           <span style="background:#FFFBEB;color:#92400E;padding:2px 8px;border-radius:99px">MIT license</span>
@@ -869,13 +869,13 @@
 <span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Pin to a specific version --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.4/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Self-hosted</h3>
       <p>Download <code>porphyry.min.js</code> (or <code>porphyry.js</code> for the commented source) and include it directly:</p>
 <pre><span class="kw">&lt;script</span> src=<span class="st">"porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Example</h3>
 <pre><span class="cm">&lt;!-- Include from CDN --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.4/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Give it a container --&gt;</span>
 <span class="kw">&lt;div</span> id=<span class="st">"map"</span> style=<span class="st">"width:100%;height:500px"</span><span class="kw">&gt;&lt;/div&gt;</span>
@@ -1098,6 +1098,7 @@ map.<span class="fn">_renderInternal</span>(<span class="nm">false</span>); <spa
         <tr><td>render(data)</td><td>Parse <code>data</code>, lay out and draw the full tree. <strong>Clears all collapse state.</strong> Automatically calls <code>fit()</code> after the first paint.</td></tr>
         <tr><td>fit()</td><td>Scale and translate the graph so it fits neatly inside the container, respecting <code>fitPadding</code>.</td></tr>
         <tr><td>reset()</td><td>Reset pan and zoom to 1:1, centered.</td></tr>
+        <tr><td>destroy()</td><td>Disconnects the internal <code>ResizeObserver</code>. Call when removing the container from the DOM to avoid memory leaks.</td></tr>
         <tr><td>downloadSVG(filename?)</td><td>Download the current mind map as a standalone SVG file. <code>filename</code> defaults to <code>'mindmap.svg'</code>. The export strips the pan/zoom transform and recalculates a clean viewBox from content bounds.</td></tr>
         <tr><td>_renderInternal(autoFit)</td><td>Re-layout and redraw while <strong>preserving collapse state</strong>. Pass <code>false</code> to skip re-fitting (e.g. after a collapse toggle or layout switch).</td></tr>
         <tr><td>_rebindInteractions()</td><td>Call after mutating <code>options.interactions</code> at runtime. Strips old event listeners, re-attaches new ones, and updates cursor and tips text.</td></tr>

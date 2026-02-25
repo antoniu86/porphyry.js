@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.4.3-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+[![version](https://img.shields.io/badge/version-1.4.4-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
 
 ---
 
@@ -18,6 +18,7 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 - **9 built-in themes** — classic, ghost, underline, baseline, outline, solid, solid-sharp, outline-sharp, minimal; smart defaults per layout
 - **Text wrapping** — long labels wrap automatically within a configurable max width
 - **Adaptive spacing** — column gaps scale down automatically for deep trees
+- **Responsive** — automatically re-fits when the container is resized via `ResizeObserver`
 - **Clickable nodes** — add a `url` field to any node to make it a link
 - **Opt-in interactions** — pan, zoom, collapse, HUD and tips are all off by default for clean embedding
 - **Touch support** — single-finger pan, two-finger pinch-to-zoom
@@ -37,7 +38,7 @@ The fastest way to get started — no download or build step needed:
 <script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
 
 <!-- Pin to a specific version -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.4/porphyry.min.js"></script>
 ```
 
 ### Self-hosted
@@ -52,7 +53,7 @@ Download `porphyry.min.js` (or `porphyry.js` for the commented source) and inclu
 
 ```html
 <!-- Include from CDN -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.3/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.4/porphyry.min.js"></script>
 
 <!-- Give it a container with explicit dimensions -->
 <div id="map" style="width: 100%; height: 500px;"></div>
@@ -280,6 +281,7 @@ map._renderInternal(false);   // re-render without re-fitting
 | `render(data)` | Parse data, lay out and draw the full tree. Clears all collapse state. Auto-calls `fit()` after the first paint. |
 | `fit()` | Scale and pan so the graph fits neatly inside the container, respecting `fitPadding`. |
 | `reset()` | Reset pan and zoom to 1:1, centered. |
+| `destroy()` | Disconnects the internal `ResizeObserver`. Call when removing the container from the DOM to avoid memory leaks. |
 | `downloadSVG(filename?)` | Download the current mind map as a standalone SVG file. `filename` defaults to `'mindmap.svg'`. The export strips the pan/zoom transform and recalculates a clean viewBox from the content bounds. |
 | `_renderInternal(autoFit)` | Re-layout and redraw while preserving collapse state. Pass `false` to skip re-fitting (e.g. after a collapse toggle). |
 | `_rebindInteractions()` | Call after mutating `options.interactions` at runtime. Re-attaches event listeners and refreshes the cursor and tips text. |
