@@ -288,10 +288,10 @@
       'background:#fff', 'border:1px solid #E2E8F0', 'border-radius:10px',
       'padding:4px 9px', 'box-shadow:0 2px 10px rgba(0,0,0,0.08)',
       'z-index:10', 'font-family:system-ui,sans-serif',
-      'opacity:0.25', 'transition:opacity 0.2s',
+      'opacity:0.4', 'transition:opacity 0.2s',
     ].join(';');
     hud.addEventListener('mouseenter', () => { hud.style.opacity = '1'; });
-    hud.addEventListener('mouseleave', () => { hud.style.opacity = '0.25'; });
+    hud.addEventListener('mouseleave', () => { hud.style.opacity = '0.4'; });
 
     const btnStyle = [
       'width:26px', 'height:26px', 'border:1px solid #E2E8F0', 'border-radius:6px',
@@ -427,9 +427,12 @@
       'font-size:11.5px', 'color:#718096',
       'background:#fff', 'border:1px solid #E2E8F0', 'border-radius:8px',
       'padding:5px 14px', 'box-shadow:0 2px 10px rgba(0,0,0,0.08)',
-      'white-space:nowrap', 'pointer-events:none', 'z-index:10',
+      'white-space:nowrap', 'z-index:10',
       'font-family:system-ui,sans-serif',
+      'opacity:0.4', 'transition:opacity 0.2s',
     ].join(';');
+    tips.addEventListener('mouseenter', () => { tips.style.opacity = '1'; });
+    tips.addEventListener('mouseleave', () => { tips.style.opacity = '0.4'; });
     this.container.appendChild(tips);
     this._tips = tips;
     this._updateTips();
@@ -479,6 +482,7 @@
 
     if (autoFit) {
       const self = this;
+      this.svg.style.transition = 'none';  // hide instantly, no fade-out of old layout
       this.svg.style.opacity = '0';
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
