@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.5.0
+ * @version 1.5.1
  * @license MIT
  */
 (function (global) {
@@ -898,15 +898,16 @@
 
   Porphyry.prototype._drawNode = function (node) {
     const o = this.options;
-    const hasLink    = !!node.url;
-    const hasOnclick = !hasLink && !!node.onclick;
-    const hasAction  = (hasLink || hasOnclick) && o.showLinkIcons;
+    const hasLink      = !!node.url;
+    const hasOnclick   = !hasLink && !!node.onclick;
+    const hasClickable = hasLink || hasOnclick;           // drives cursor + click handler
+    const hasAction    = hasClickable && o.showLinkIcons; // drives icon rendering + textX offset
     const layout = o.layout;
     const vertical = layout === 'up' || layout === 'down';
     const theme = (o.theme === 'classic' && vertical) ? 'outline' : (o.theme || 'classic');
 
     const g = svgEl('g', {
-      class: 'mm-node' + (hasAction ? ' mm-node-linked' : ''),
+      class: 'mm-node' + (hasClickable ? ' mm-node-linked' : ''),
       'data-depth': node.depth,
     });
 
@@ -1061,11 +1062,11 @@
     g.style.willChange = 'opacity';
     g.addEventListener('mouseenter', () => {
       g.style.opacity = '0.82';
-      if (hasAction) this.svg.style.cursor = 'pointer';
+      if (hasClickable) this.svg.style.cursor = 'pointer';
     });
     g.addEventListener('mouseleave', () => {
       g.style.opacity = '1';
-      if (hasAction) this.svg.style.cursor = this.options.interactions.pan
+      if (hasClickable) this.svg.style.cursor = this.options.interactions.pan
         ? (this._dragging ? 'grabbing' : 'grab')
         : 'default';
     });
