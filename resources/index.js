@@ -89,6 +89,93 @@ const EXAMPLES = [
   },
 
   {
+    label: 'Product Strategy (onclick)',
+    desc: 'Classic product roadmap — onclick',
+    data: {
+      topic: 'Product Strategy',
+      onclick: function(node) { alert(node.topic); },
+      children: [
+        {
+          topic: 'Research',
+          children: [
+            { topic: 'User Interviews', onclick: function(node) { alert(node.topic); } },
+            { topic: 'Competitor Analysis' },
+            { topic: 'Market Sizing' },
+          ]
+        },
+        {
+          topic: 'Design',
+          children: [
+            { topic: 'Wireframes' },
+            { topic: 'Prototyping', onclick: function(node) { alert(node.topic); } },
+            { topic: 'Design System', onclick: function(node) { alert(node.topic); } },
+          ]
+        },
+        {
+          topic: 'Engineering',
+          children: [
+            { topic: 'Frontend', onclick: function(node) { alert(node.topic); }, children: [{ topic: 'React', onclick: function(node) { alert(node.topic); } }, { topic: 'Tests' }] },
+            { topic: 'Backend',  children: [{ topic: 'API' }, { topic: 'DB' }] },
+            { topic: 'DevOps',   children: [{ topic: 'CI/CD', onclick: function(node) { alert(node.topic); } }, { topic: 'Monitoring' }] },
+          ]
+        },
+        {
+          topic: 'Go-to-Market',
+          children: [
+            { topic: 'Pricing' },
+            { topic: 'Campaigns' },
+            { topic: 'Partnerships' },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
+    label: 'Solar System (onclick)',
+    desc: 'Science — astronomy — onclick',
+    data: {
+      topic: 'Solar System',
+      onclick: function(node) { alert(node.topic); },
+      children: [
+        {
+          topic: 'Inner Planets',
+          children: [
+            { topic: 'Mercury', onclick: function(node) { alert(node.topic); } },
+            { topic: 'Venus',   onclick: function(node) { alert(node.topic); } },
+            { topic: 'Earth',   onclick: function(node) { alert(node.topic); }, children: [{ topic: 'Moon', onclick: function(node) { alert(node.topic); } }] },
+            { topic: 'Mars',    onclick: function(node) { alert(node.topic); }, children: [{ topic: 'Phobos' }, { topic: 'Deimos' }] },
+          ]
+        },
+        {
+          topic: 'Asteroid Belt',
+          children: [
+            { topic: 'Ceres' },
+            { topic: 'Vesta' },
+          ]
+        },
+        {
+          topic: 'Outer Planets',
+          children: [
+            { topic: 'Jupiter', onclick: function(node) { alert(node.topic); }, children: [{ topic: 'Io' }, { topic: 'Europa', onclick: function(node) { alert(node.topic); } }] },
+            { topic: 'Saturn',  children: [{ topic: 'Titan', onclick: function(node) { alert(node.topic); } }, { topic: 'Rings' }] },
+            { topic: 'Uranus'  },
+            { topic: 'Neptune' },
+          ]
+        },
+        {
+          topic: 'Beyond',
+          children: [
+            { topic: 'Kuiper Belt', onclick: function(node) { alert(node.topic); } },
+            { topic: 'Oort Cloud' },
+            { topic: 'Pluto', onclick: function(node) { alert(node.topic); } },
+          ]
+        },
+      ]
+    }
+  },
+
+  {
     label: 'Programming',
     desc: 'CS / Dev topics',
     data: {
@@ -552,11 +639,13 @@ function setInteraction() {
   const pan      = document.getElementById('toggle-pan').checked;
   const zoom     = document.getElementById('toggle-zoom').checked;
   const collapse = document.getElementById('toggle-collapse').checked;
-  const hud      = document.getElementById('toggle-hud').checked;
-  const tips     = document.getElementById('toggle-tips').checked;
+  const hud       = document.getElementById('toggle-hud').checked;
+  const tips      = document.getElementById('toggle-tips').checked;
+  const linkIcons = document.getElementById('toggle-link-icons').checked;
   mm.options.interactions.pan      = pan;
   mm.options.interactions.zoom     = zoom;
   mm.options.interactions.collapse = collapse;
+  mm.options.showLinkIcons         = linkIcons;
   mm._rebindInteractions();
   // If collapse was just disabled, expand everything first
   if (!collapse) mm._collapsed.clear();

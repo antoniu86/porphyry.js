@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.4.6-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+[![version](https://img.shields.io/badge/version-1.5.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
 
 ---
 
@@ -19,7 +19,7 @@ Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosoph
 - **Text wrapping** — long labels wrap automatically within a configurable max width
 - **Adaptive spacing** — column gaps scale down automatically for deep trees
 - **Responsive** — automatically re-fits when the container is resized via `ResizeObserver`
-- **Clickable nodes** — add a `url` field to any node to make it a link
+- **Clickable nodes** — add a `url` field to open a link, or an `onclick` handler to run custom JS
 - **Opt-in interactions** — pan, zoom, collapse, HUD and tips are all off by default for clean embedding
 - **Touch support** — single-finger pan, two-finger pinch-to-zoom
 
@@ -38,7 +38,7 @@ The fastest way to get started — no download or build step needed:
 <script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
 
 <!-- Pin to a specific version -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.6/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.5.0/porphyry.min.js"></script>
 ```
 
 ### Self-hosted
@@ -53,7 +53,7 @@ Download `porphyry.min.js` (or `porphyry.js` for the commented source) and inclu
 
 ```html
 <!-- Include from CDN -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.6/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.5.0/porphyry.min.js"></script>
 
 <!-- Give it a container with explicit dimensions -->
 <div id="map" style="width: 100%; height: 500px;"></div>
@@ -103,7 +103,8 @@ Porphyry accepts a plain JSON object. Every node needs a `topic`; everything els
 | Field | Type | Description |
 |---|---|---|
 | `topic` | `string` | Node label. Long text wraps automatically within the configured max width. |
-| `url` | `string?` | Makes the node clickable — opens in a new tab. A ↗ icon appears inside the node. |
+| `url` | `string?` | Makes the node clickable — opens in a new tab. A ↗ icon appears inside the node. Takes priority over `onclick`. |
+| `onclick` | `function?` | A JS function called when the node is clicked. Receives the node object as its argument. Ignored if `url` is also set. A ▶ icon appears inside the node. |
 | `direction` | `"left" \| "right"?` | Pin a root-level child to a specific side in horizontal layouts. Ignored in vertical layouts. |
 | `children` | `Node[]?` | Child nodes. Omit or leave empty for leaf nodes. |
 
@@ -129,7 +130,8 @@ new Porphyry(selector, options)
 | Option | Default | Description |
 |---|---|---|
 | `layout` | `"auto"` | Direction mode: `"auto"`, `"left"`, `"right"`, `"down"`, or `"up"`. |
-| `centerEdge` | `"side"` | Where first-level branch edges connect on the center node (horizontal layouts only). `"side"` exits the left/right walls. `"vertical"` fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. Nodes that are vertically close to the root (within roughly one root height) automatically draw from the side instead, keeping the fan shape clean. With `"vertical"` the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on `"up"`/`"down"` layouts. |
+| `centerEdge` | `"side"` | Where first-level branch edges connect on the center node (horizontal layouts only). `"side"` exits the left/right walls. `"vertical"` fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. Nodes whose vertical overlap with the root falls within the `fanAlignThreshold` band automatically draw from the side instead, keeping the fan shape clean. With `"vertical"` the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on `"up"`/`"down"` layouts. |
+| `fanAlignThreshold` | `10` | Extra pixel buffer (px) used when `centerEdge: "vertical"` to decide whether a first-level node is close enough to the root's horizontal center to draw its edge from the side instead of the top/bottom fan. Detection zone: `(root.height / 2) + (node.height / 2) + fanAlignThreshold`. Increase to widen the side-exit band; `0` means exact edge-to-edge overlap only. |
 | `fitPadding` | `20` | Pixels of padding when auto-fitting to the container. |
 | `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
 | `spacing` | `1` | Spacing multiplier applied to all node distances before depth-adaptive scaling. Accepts any value from `0.1` (extremely compact) to `2.0` (very spread out). `1` is the default. |
@@ -229,6 +231,7 @@ All interactions are **off by default** for clean embedding. Opt in explicitly t
 | `minZoom` | `0.08` | Minimum zoom scale. |
 | `maxZoom` | `4` | Maximum zoom scale. |
 | `zoomSensitivity` | `0.12` | Scroll-wheel zoom speed per tick. |
+| `showLinkIcons` | `true` | Whether to show the ↗ icon on `url` nodes and the ▶ icon on `onclick` nodes. Set to `false` to hide the icons while keeping click behaviour active. |
 
 ---
 
@@ -334,11 +337,13 @@ The exported file opens correctly in browsers, Illustrator, Inkscape and other S
 
 ---
 
-## Node Links
+## Node Links & Actions
 
-Any node can carry an optional `url` field. When present:
+Any node can be made interactive with either a `url` or an `onclick` handler. If both are set, `url` takes priority.
 
-- A small ↗ external-link icon appears inside the node, right-aligned with padding from the edge.
+### url — external link
+
+- A small ↗ icon appears inside the node, right-aligned.
 - The cursor changes to a pointer on hover.
 - Clicking opens the URL in a new tab (`noopener noreferrer`).
 - Drags longer than 5 px never trigger the link, so panning over linked nodes is safe.
@@ -346,6 +351,19 @@ Any node can carry an optional `url` field. When present:
 ```json
 { "topic": "React", "url": "https://react.dev" }
 ```
+
+### onclick — custom handler
+
+- A small ▶ icon appears inside the node, right-aligned.
+- The cursor changes to a pointer on hover.
+- Clicking calls your function, receiving the node object as its argument.
+- Drag-to-pan is still safe — the handler only fires on non-drag clicks.
+
+```js
+{ topic: "Run Report", onclick: function(node) { alert(node.topic); } }
+```
+
+To hide the icons while keeping click behaviour, set `showLinkIcons: false`.
 
 ---
 

@@ -67,7 +67,7 @@
         <line x1="17" y1="11" x2="20" y2="8" stroke="#D4A017" stroke-width="1.2" stroke-linecap="round"/>
       </svg>
       Porphyry.js
-      <span class="badge">v1.4.6</span>
+      <span class="badge">v1.5.0</span>
     </div>
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="demo">Demo</button>
@@ -144,6 +144,9 @@
       <label class="interact-toggle">
         <input type="checkbox" id="toggle-tips"     checked onchange="setInteraction()"> Tips
       </label>
+      <label class="interact-toggle">
+        <input type="checkbox" id="toggle-link-icons" checked onchange="setInteraction()"> Link icons
+      </label>
       <div class="separator"></div>
       <span style="font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.4px">SPACING</span>
       <div class="spacing-wrap">
@@ -207,7 +210,7 @@
         <h1>Porphyry.js</h1>
         <p>A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG. Named after Porphyry of Tyre, the ancient philosopher who introduced the hierarchical <em>tree of categories</em>.</p>
         <div class="docs-hero-badge">
-          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.4.6</span>
+          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.5.0</span>
           <span style="background:#F0FFF4;color:#276749;padding:2px 8px;border-radius:99px">Zero dependencies</span>
           <span style="background:#FAF5FF;color:#553C9A;padding:2px 8px;border-radius:99px">SVG-based</span>
           <span style="background:#FFFBEB;color:#92400E;padding:2px 8px;border-radius:99px">MIT license</span>
@@ -227,13 +230,13 @@
 <span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Pin to a specific version --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.6/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.5.0/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Self-hosted</h3>
       <p>Download <code>porphyry.min.js</code> (or <code>porphyry.js</code> for the commented source) and include it directly:</p>
 <pre><span class="kw">&lt;script</span> src=<span class="st">"porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Example</h3>
 <pre><span class="cm">&lt;!-- Include from CDN --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.4.6/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.5.0/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Give it a container --&gt;</span>
 <span class="kw">&lt;div</span> id=<span class="st">"map"</span> style=<span class="st">"width:100%;height:500px"</span><span class="kw">&gt;&lt;/div&gt;</span>
@@ -259,7 +262,8 @@
       <p>Porphyry accepts a plain JSON object. Every node has a <code>topic</code> and an optional <code>children</code> array. Nesting can go as deep as needed.</p>
 <pre>{
   <span class="ky">topic</span>: <span class="st">"Root Subject"</span>,           <span class="cm">// required — label text</span>
-  <span class="ky">url</span>:   <span class="st">"https://example.com"</span>,   <span class="cm">// optional — makes node clickable</span>
+  <span class="ky">url</span>:   <span class="st">"https://example.com"</span>,   <span class="cm">// optional — makes node clickable (opens URL)</span>
+  <span class="ky">onclick</span>: <span class="kw">function</span>(node) { },   <span class="cm">// optional — custom click handler (url takes priority)</span>
   <span class="ky">direction</span>: <span class="st">"left"</span>,              <span class="cm">// optional — "left"|"right", auto otherwise</span>
   <span class="ky">children</span>: [
     {
@@ -276,7 +280,8 @@
       <table class="prop-table">
         <tr><th>Field</th><th>Type</th><th>Description</th></tr>
         <tr><td>topic</td><td>string</td><td>Node label. Long text wraps automatically within the configured max width.</td></tr>
-        <tr><td>url</td><td>string?</td><td>If present, the node becomes clickable and opens this URL in a new tab. A small ↗ icon appears inside the node.</td></tr>
+        <tr><td>url</td><td>string?</td><td>If present, the node becomes clickable and opens this URL in a new tab. A small ↗ icon appears inside the node. Takes priority over <code>onclick</code>.</td></tr>
+        <tr><td>onclick</td><td>function?</td><td>A JS function called when the node is clicked. Receives the node object as its argument. Ignored if <code>url</code> is also set. A ▶ icon appears inside the node.</td></tr>
         <tr><td>direction</td><td>"left"|"right"?</td><td>Pin a root-level child to a specific side. Only respected on direct children of the root in horizontal layouts. Ignored in vertical layouts.</td></tr>
         <tr><td>children</td><td>Node[]?</td><td>Child nodes. Omit or leave empty for leaf nodes.</td></tr>
       </table>
@@ -301,7 +306,8 @@
       <table class="prop-table">
         <tr><th>Option</th><th>Default</th><th>Description</th></tr>
         <tr><td>layout</td><td>"auto"</td><td>Direction mode. One of <code>"auto"</code>, <code>"left"</code>, <code>"right"</code>, <code>"down"</code>, <code>"up"</code>. See Layout Modes below.</td></tr>
-        <tr><td>centerEdge</td><td>"side"</td><td>Where edges connect on the center node in horizontal layouts. <code>"side"</code> exits the left/right walls. <code>"vertical"</code> fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. Nodes that are vertically close to the root (within roughly one root height) automatically draw from the side instead, keeping the fan shape clean. With <code>"vertical"</code> the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on <code>"up"</code>/<code>"down"</code> layouts.</td></tr>
+        <tr><td>centerEdge</td><td>"side"</td><td>Where edges connect on the center node in horizontal layouts. <code>"side"</code> exits the left/right walls. <code>"vertical"</code> fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. Nodes whose vertical overlap with the root falls within the <code>fanAlignThreshold</code> band automatically draw from the side instead, keeping the fan shape clean. With <code>"vertical"</code> the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on <code>"up"</code>/<code>"down"</code> layouts.</td></tr>
+        <tr><td>fanAlignThreshold</td><td>10</td><td>Extra pixel buffer (px) used when <code>centerEdge: "vertical"</code> to decide whether a first-level node is close enough to the root's horizontal center to draw its edge from the side instead of the top/bottom fan. The detection zone is <code>(root.height / 2) + (node.height / 2) + fanAlignThreshold</code>. Increase to widen the side-exit band; set to <code>0</code> for exact edge-to-edge overlap only.</td></tr>
         <tr><td>theme</td><td>"classic"</td><td>Visual theme controlling node shapes, fills, borders and edge anchors. See Themes below.</td></tr>
         <tr><td>fitPadding</td><td>20</td><td>Pixels of padding around the graph when auto-fitting to the container.</td></tr>
         <tr><td>lineHeight</td><td>1.45</td><td>Line height multiplier for wrapped text.</td></tr>
@@ -375,6 +381,7 @@
         <tr><td>minZoom</td><td>0.08</td><td>Minimum zoom scale (when zoom is enabled).</td></tr>
         <tr><td>maxZoom</td><td>4</td><td>Maximum zoom scale (when zoom is enabled).</td></tr>
         <tr><td>zoomSensitivity</td><td>0.12</td><td>Scroll-wheel zoom speed per tick.</td></tr>
+        <tr><td>showLinkIcons</td><td>true</td><td>Whether to show the ↗ icon on <code>url</code> nodes and the ▶ icon on <code>onclick</code> nodes. Set to <code>false</code> to hide the icons while keeping click behaviour active.</td></tr>
       </table>
     </div>
 
@@ -503,15 +510,25 @@ document.<span class="fn">getElementById</span>(<span class="st">'my-btn'</span>
 
     <!-- Node Links -->
     <div class="docs-section">
-      <h2>Node Links</h2>
-      <p>Any node can carry an optional <code>url</code> field. When present:</p>
+      <h2>Node Links &amp; Actions</h2>
+      <p>Any node can be made interactive with either a <code>url</code> or an <code>onclick</code> handler. If both are set, <code>url</code> takes priority.</p>
+      <h3>url — external link</h3>
       <ul>
-        <li>A small ↗ external-link icon appears inside the node on the right side.</li>
+        <li>A small ↗ icon appears inside the node on the right side.</li>
         <li>The cursor changes to a pointer on hover.</li>
         <li>Clicking opens the URL in a new tab (<code>noopener noreferrer</code>).</li>
         <li>A drag that moves more than 5 px never triggers the link, so panning over linked nodes is safe.</li>
       </ul>
 <pre>{ <span class="ky">topic</span>: <span class="st">"React"</span>, <span class="ky">url</span>: <span class="st">"https://react.dev"</span> }</pre>
+      <h3>onclick — custom handler</h3>
+      <ul>
+        <li>A small ▶ icon appears inside the node on the right side.</li>
+        <li>The cursor changes to a pointer on hover.</li>
+        <li>Clicking calls your function, receiving the node object as its argument.</li>
+        <li>Drag-to-pan is still safe — the handler only fires on non-drag clicks.</li>
+      </ul>
+<pre>{ <span class="ky">topic</span>: <span class="st">"Run Report"</span>, <span class="ky">onclick</span>: <span class="kw">function</span>(node) { <span class="fn">alert</span>(node.topic); } }</pre>
+      <p>To hide the icons while keeping click behaviour, set <code>showLinkIcons: false</code>.</p>
     </div>
 
     <!-- Text Wrapping -->

@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.4.6
+ * @version 1.5.0
  * @license MIT
  */
 (function (global) {
@@ -121,6 +121,14 @@
     // 'underline'    : transparent colored bg + bottom border, bottom-anchored edges
     // 'baseline'     : no background, bottom border only, bottom-anchored edges
     theme: 'classic',
+    // Whether to show the external-link / onclick icon on nodes that have a url or onclick handler.
+    showLinkIcons: true,
+    // Extra pixel buffer added to the alignment zone in 'vertical' centerEdge mode.
+    // A first-level node is considered aligned when its center Y is within
+    // (root.height / 2) + (node.height / 2) + fanAlignThreshold of the root center,
+    // meaning the node vertically overlaps (or nearly overlaps) the root's height band.
+    // Increase to widen the zone; 0 means exact edge-to-edge overlap only.
+    fanAlignThreshold: 10,
   };
 
   // ─── Utility ──────────────────────────────────────────────────────────────
@@ -590,7 +598,8 @@
   Porphyry.prototype._buildTree = function (data, parent, colorIdx, depth) {
     const node = {
       topic: data.topic || '',
-      url: data.url || null,           // optional link; null = no link
+      url: data.url || null,            // optional link; null = no link
+      onclick: (!data.url && typeof data.onclick === 'function') ? data.onclick : null, // custom click handler (url takes priority)
       direction: data.direction || null, // 'left' | 'right' | null (auto)
       depth: depth,
       parent: parent,
@@ -683,7 +692,7 @@
       fs = o.leaf.fontSize;   px = o.leaf.paddingX;   py = o.leaf.paddingY;   maxW = o.leaf.maxWidth   * wf;
     }
 
-    const iconExtra = node.url ? LINK_ICON_SPACE : 0;
+    const iconExtra = (node.url || node.onclick) && o.showLinkIcons ? LINK_ICON_SPACE : 0;
     // The content area width available for text (inside padding, minus icon)
     const maxContentW = maxW - px * 2 - iconExtra;
 
@@ -889,17 +898,19 @@
 
   Porphyry.prototype._drawNode = function (node) {
     const o = this.options;
-    const hasLink = !!node.url;
+    const hasLink    = !!node.url;
+    const hasOnclick = !hasLink && !!node.onclick;
+    const hasAction  = (hasLink || hasOnclick) && o.showLinkIcons;
     const layout = o.layout;
     const vertical = layout === 'up' || layout === 'down';
     const theme = (o.theme === 'classic' && vertical) ? 'outline' : (o.theme || 'classic');
 
     const g = svgEl('g', {
-      class: 'mm-node' + (hasLink ? ' mm-node-linked' : ''),
+      class: 'mm-node' + (hasAction ? ' mm-node-linked' : ''),
       'data-depth': node.depth,
     });
 
-    const textX = hasLink ? node.x - LINK_ICON_SPACE / 2 : node.x;
+    const textX = hasAction ? node.x - LINK_ICON_SPACE / 2 : node.x;
     const color = node.depth === 0 ? o.center.fill : o.colors[node.colorIdx];
     const fontWeight = node.depth === 0 ? '700' : node.depth === 1 ? '600' : '500';
 
@@ -915,7 +926,8 @@
         });
         g.appendChild(rect);
         g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.center.color, '700'));
-        if (hasLink) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.7)'));
+        if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.7)'));
+        if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, 'rgba(255,255,255,0.7)'));
 
       } else if (theme === 'classic') {
         // ── Classic: solid pill for depth 1, transparent+underline for depth 2+ ──
@@ -928,7 +940,8 @@
           });
           g.appendChild(rect);
           g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.branch.color, '600'));
-          if (hasLink) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.8)'));
+          if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, 'rgba(255,255,255,0.8)'));
+          if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, 'rgba(255,255,255,0.8)'));
         } else {
           const bg = svgEl('rect', {
             x: node.x - node.width / 2, y: node.y - node.height / 2,
@@ -943,7 +956,8 @@
           });
           g.appendChild(underline);
           g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, '500'));
-          if (hasLink) g.appendChild(this._makeLinkIcon(node, color));
+          if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, color));
+          if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, color));
         }
 
       } else if (theme === 'ghost') {
@@ -956,7 +970,8 @@
         });
         g.appendChild(bg);
         g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, fontWeight));
-        if (hasLink) g.appendChild(this._makeLinkIcon(node, tintColor));
+        if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, tintColor));
+        if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, tintColor));
 
       } else {
         // ── Underline / Baseline: optional transparent bg + bottom border ──
@@ -984,7 +999,8 @@
         });
         g.appendChild(border);
         g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.leaf.color, fontWeight));
-        if (hasLink) g.appendChild(this._makeLinkIcon(node, tintColor));
+        if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, tintColor));
+        if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, tintColor));
       }
 
     // ── Themed styles (apply to all nodes, both vertical and horizontal) ──
@@ -1000,7 +1016,8 @@
       });
       g.appendChild(hitRect);
       g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, textColor, fw));
-      if (hasLink) g.appendChild(this._makeLinkIcon(node, textColor));
+      if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, textColor));
+      if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, textColor));
 
     } else {
       // All box-based themes: outline, solid, solid-sharp, outline-sharp
@@ -1034,7 +1051,9 @@
       if (filter) rect.setAttribute('filter', filter);
       g.appendChild(rect);
       g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, textColor, fontWeight));
-      if (hasLink) g.appendChild(this._makeLinkIcon(node, isSolid ? 'rgba(255,255,255,0.8)' : color));
+      const iconColor = isSolid ? 'rgba(255,255,255,0.8)' : color;
+      if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, iconColor));
+      if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, iconColor));
     }
 
     // ── Hover ──
@@ -1042,21 +1061,27 @@
     g.style.willChange = 'opacity';
     g.addEventListener('mouseenter', () => {
       g.style.opacity = '0.82';
-      if (hasLink) this.svg.style.cursor = 'pointer';
+      if (hasAction) this.svg.style.cursor = 'pointer';
     });
     g.addEventListener('mouseleave', () => {
       g.style.opacity = '1';
-      if (hasLink) this.svg.style.cursor = this.options.interactions.pan
+      if (hasAction) this.svg.style.cursor = this.options.interactions.pan
         ? (this._dragging ? 'grabbing' : 'grab')
         : 'default';
     });
 
-    // ── Link click ──
+    // ── Click ──
     if (hasLink) {
       g.addEventListener('click', (e) => {
         if (this._dragMoved) return;
         e.stopPropagation();
         window.open(node.url, '_blank', 'noopener,noreferrer');
+      });
+    } else if (hasOnclick) {
+      g.addEventListener('click', (e) => {
+        if (this._dragMoved) return;
+        e.stopPropagation();
+        node.onclick(node);
       });
     }
 
@@ -1159,8 +1184,8 @@
    * @param {string} color  icon stroke color
    */
   Porphyry.prototype._makeLinkIcon = function (node, color) {
-    const s = 9;  // icon size
-    const margin = 12; // px from right edge (+5 from original 7)
+    const s = 7;  // icon size
+    const margin = 12; // px from right edge
     // Position: vertically centered, near right edge
     const ix = node.x + node.width / 2 - margin - s;
     const iy = node.y - s / 2;
@@ -1190,6 +1215,41 @@
     arrow.setAttribute('stroke-width', '1.4');
     arrow.setAttribute('stroke-linecap', 'round');
     g.appendChild(arrow);
+
+    return g;
+  };
+
+  /**
+   * Draw a small "action" icon (play triangle) for onclick nodes, right-aligned.
+   * @param {Object} node
+   * @param {string} color  icon stroke/fill color
+   */
+  Porphyry.prototype._makeOnclickIcon = function (node, color) {
+    const s = 7;       // icon size (same as link icon)
+    const margin = 12; // px from right edge
+    const ix = node.x + node.width / 2 - margin - s;
+    const iy = node.y - s / 2;
+
+    const g = svgEl('g', { 'pointer-events': 'none' });
+
+    // Circle background
+    const cx = ix + s / 2, cy = iy + s / 2, r = s / 2;
+    const circle = document.createElementNS(NS, 'circle');
+    circle.setAttribute('cx', cx);
+    circle.setAttribute('cy', cy);
+    circle.setAttribute('r', r);
+    circle.setAttribute('stroke', color);
+    circle.setAttribute('stroke-width', '1.4');
+    circle.setAttribute('fill', 'none');
+    g.appendChild(circle);
+
+    // Play triangle (pointing right, centered in circle)
+    const tx = cx - 1.2, ty = cy;
+    const tri = document.createElementNS(NS, 'path');
+    tri.setAttribute('d', `M ${tx} ${ty - 2} L ${tx + 3.2} ${ty} L ${tx} ${ty + 2} Z`);
+    tri.setAttribute('fill', color);
+    tri.setAttribute('stroke', 'none');
+    g.appendChild(tri);
 
     return g;
   };
@@ -1301,7 +1361,7 @@
     // root's half-height), a top/bottom departure would produce an awkward arc,
     // so we switch to a side connection for those nodes instead.
     const isVerticalFan = parent.depth === 0 && (o.centerEdge || 'side') === 'vertical';
-    const isAligned = isVerticalFan && Math.abs(child.y) <= parent.height;
+    const isAligned = isVerticalFan && Math.abs(child.y) <= (parent.height / 2) + (child.height / 2) + (o.fanAlignThreshold ?? 10);
     let ex1 = x1, ey1 = y1;
     if (isAligned) {
       // Override: exit from the left/right wall of the root at its vertical center
