@@ -376,6 +376,12 @@ The floor is 45 % of the configured defaults. Vertical layouts are unaffected.
 
 ---
 
+## Automatic Width Scaling
+
+When a container has significantly more horizontal space than vertical (horizontal-to-vertical ratio > 1.5×), the library automatically scales up node `maxWidth` values before layout — by up to 2.5× — so text wraps less and the map fills the available width. This happens transparently on every render; no configuration is needed.
+
+---
+
 ## Files
 
 | File | Description |
