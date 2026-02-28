@@ -129,7 +129,7 @@ new Porphyry(selector, options)
 | Option | Default | Description |
 |---|---|---|
 | `layout` | `"auto"` | Direction mode: `"auto"`, `"left"`, `"right"`, `"down"`, or `"up"`. |
-| `centerEdge` | `"side"` | Where first-level branch edges connect on the center node (horizontal layouts only). `"side"` exits the left/right walls. `"vertical"` fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. With `"vertical"` the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on `"up"`/`"down"` layouts. |
+| `centerEdge` | `"side"` | Where first-level branch edges connect on the center node (horizontal layouts only). `"side"` exits the left/right walls. `"vertical"` fans edges out from the top or bottom center — top vs bottom is chosen automatically per branch based on vertical position. Nodes that are vertically close to the root (within roughly one root height) automatically draw from the side instead, keeping the fan shape clean. With `"vertical"` the center node's width no longer affects branch placement, so it can grow wide freely. Has no effect on `"up"`/`"down"` layouts. |
 | `fitPadding` | `20` | Pixels of padding when auto-fitting to the container. |
 | `lineHeight` | `1.45` | Line height multiplier for wrapped text. |
 | `spacing` | `1` | Spacing multiplier applied to all node distances before depth-adaptive scaling. Accepts any value from `0.1` (extremely compact) to `2.0` (very spread out). `1` is the default. |

@@ -478,6 +478,31 @@
     this._computeSizes(this._tree);
     this._computeAdaptiveSpacing(this._tree);
     this._layoutTree(this._tree);
+
+    // If the container has significantly more horizontal room than vertical,
+    // widen nodes so text wraps less and the map fills the available width.
+    // We compute a virtual bbox from node positions (no DOM needed), then
+    // check the horizontal vs vertical slack. If horizontal slack is ≥50%
+    // more than vertical, we scale up maxWidths and re-layout before drawing.
+    if (autoFit) {
+      const cw = this.container.clientWidth;
+      const ch = this.container.clientHeight;
+      const p  = this.options.fitPadding;
+      if (cw > 0 && ch > 0) {
+        const b = this._bboxFromTree();
+        if (b.width > 0 && b.height > 0) {
+          const sx = (cw - p * 2) / b.width;
+          const sy = (ch - p * 2) / b.height;
+          if (sx > sy * 1.5) {
+            this._widthFactor = Math.min(sx / sy, 2.5);
+            this._computeSizes(this._tree);
+            this._layoutTree(this._tree);
+            this._widthFactor = 1;
+          }
+        }
+      }
+    }
+
     this._drawTree(this._tree);
 
     if (autoFit) {
@@ -492,6 +517,30 @@
         });
       });
     }
+  };
+
+  /**
+   * Compute a bounding box from node positions without touching the DOM.
+   * Skips children of collapsed nodes.
+   */
+  Porphyry.prototype._bboxFromTree = function () {
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    var self = this;
+    var walk = function (node) {
+      var hw = node.width / 2, hh = node.height / 2;
+      if (node.x - hw < minX) minX = node.x - hw;
+      if (node.x + hw > maxX) maxX = node.x + hw;
+      if (node.y - hh < minY) minY = node.y - hh;
+      if (node.y + hh > maxY) maxY = node.y + hh;
+      if (!self._collapsed.has(node._id)) {
+        node.children.forEach(walk);
+      }
+    };
+    walk(this._tree);
+    return {
+      width:  minX === Infinity ? 0 : maxX - minX,
+      height: minY === Infinity ? 0 : maxY - minY,
+    };
   };
 
   /**
@@ -623,14 +672,15 @@
 
   Porphyry.prototype._computeSizes = function (node) {
     const o = this.options;
+    const wf = this._widthFactor || 1;
     let fs, px, py, maxW;
 
     if (node.depth === 0) {
-      fs = o.center.fontSize; px = o.center.paddingX; py = o.center.paddingY; maxW = o.center.maxWidth;
+      fs = o.center.fontSize; px = o.center.paddingX; py = o.center.paddingY; maxW = o.center.maxWidth * wf;
     } else if (node.depth === 1) {
-      fs = o.branch.fontSize; px = o.branch.paddingX; py = o.branch.paddingY; maxW = o.branch.maxWidth;
+      fs = o.branch.fontSize; px = o.branch.paddingX; py = o.branch.paddingY; maxW = o.branch.maxWidth * wf;
     } else {
-      fs = o.leaf.fontSize;   px = o.leaf.paddingX;   py = o.leaf.paddingY;   maxW = o.leaf.maxWidth;
+      fs = o.leaf.fontSize;   px = o.leaf.paddingX;   py = o.leaf.paddingY;   maxW = o.leaf.maxWidth   * wf;
     }
 
     const iconExtra = node.url ? LINK_ICON_SPACE : 0;
@@ -1247,12 +1297,22 @@
     // the branch's Y level) then sweeps sideways to the child's near edge.
     // For standard side connections both control points share the midpoint X,
     // so the curve departs and arrives horizontally.
+    // Exception: when the child is vertically aligned with the root (within the
+    // root's half-height), a top/bottom departure would produce an awkward arc,
+    // so we switch to a side connection for those nodes instead.
     const isVerticalFan = parent.depth === 0 && (o.centerEdge || 'side') === 'vertical';
-    const mx = (x1 + x2) / 2;
-    const my = (y1 + y2) / 2;
-    const d = isVerticalFan
-      ? `M ${x1} ${y1} C ${x1} ${my}, ${mx} ${y2}, ${x2} ${y2}`
-      : `M ${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`;
+    const isAligned = isVerticalFan && Math.abs(child.y) <= parent.height;
+    let ex1 = x1, ey1 = y1;
+    if (isAligned) {
+      // Override: exit from the left/right wall of the root at its vertical center
+      ex1 = dir === 'right' ? parent.width / 2 : -parent.width / 2;
+      ey1 = this._nodeEdgeAnchorY(parent, 'start');
+    }
+    const mx = (ex1 + x2) / 2;
+    const my = (ey1 + y2) / 2;
+    const d = (isVerticalFan && !isAligned)
+      ? `M ${ex1} ${ey1} C ${ex1} ${my}, ${mx} ${y2}, ${x2} ${y2}`
+      : `M ${ex1} ${ey1} C ${mx} ${ey1}, ${mx} ${y2}, ${x2} ${y2}`;
 
     const strokeW = parent.depth === 0
       ? o.edgeWidth.root
