@@ -552,6 +552,8 @@ function setInteraction() {
   const pan      = document.getElementById('toggle-pan').checked;
   const zoom     = document.getElementById('toggle-zoom').checked;
   const collapse = document.getElementById('toggle-collapse').checked;
+  const hud      = document.getElementById('toggle-hud').checked;
+  const tips     = document.getElementById('toggle-tips').checked;
   mm.options.interactions.pan      = pan;
   mm.options.interactions.zoom     = zoom;
   mm.options.interactions.collapse = collapse;
@@ -559,7 +561,11 @@ function setInteraction() {
   // If collapse was just disabled, expand everything first
   if (!collapse) mm._collapsed.clear();
   mm._renderInternal(false);
-  updateCanvasTips();
+  // HUD and tips are built once at init — toggle visibility directly.
+  // HUD uses display:flex in its inline cssText, so we must restore 'flex'
+  // explicitly (not '' which would fall back to the block default).
+  if (mm._hud)  mm._hud.style.display  = hud  ? 'flex'  : 'none';
+  if (mm._tips) mm._tips.style.display = tips ? 'block' : 'none';
 }
 
 // ── Zoom controls (delegated to library HUD) ─────────────────────────────
@@ -590,20 +596,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 document.getElementById('json-editor').addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') applyJSON();
 });
-
-// ── Canvas tips (mirrors library tips logic, shown in toolbar outside canvas) ──
-
-function updateCanvasTips() {
-  const ix = mm.options.interactions;
-  const parts = [];
-  if (ix.zoom)     parts.push('Scroll to zoom');
-  if (ix.pan)      parts.push('Drag to pan');
-  if (ix.collapse) parts.push('+/− to collapse');
-  parts.push('↗ click node to open link');
-  document.getElementById('canvas-tips').textContent = parts.join('  ·  ');
-}
-
-updateCanvasTips();
 
 // ── Demo container size preview ────────────────────────────────────────────
 
