@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.5.1
+ * @version 1.5.2
  * @license MIT
  */
 (function (global) {
@@ -249,6 +249,7 @@
     this.svg.style.cursor = this.options.interactions.pan ? 'grab' : 'default';
     this.svg.style.transform = 'translateZ(0)';
     this.svg.style.willChange = 'transform';
+    this.svg.style.webkitFontSmoothing = 'antialiased';
 
     // Defs for filters
     const defs = svgEl('defs');
@@ -704,7 +705,7 @@
     const lh = fs * o.lineHeight;
 
     node.fontSize   = fs;
-    node.lineHeight = lh;
+    node.lineHeight = Math.round(lh);
     node.paddingX   = px;
     node.paddingY   = py;
     node.lines      = lines;                                          // ← new
@@ -822,8 +823,8 @@
     let x = node.x - totalW / 2;
 
     node.children.forEach((child, i) => {
-      child.x = x + widths[i] / 2;
-      child.y = edgeY + sign * child.height / 2;
+      child.x = Math.round(x + widths[i] / 2);
+      child.y = Math.round(edgeY + sign * child.height / 2);
       this._layoutVerticalNode(child, sign);
       x += widths[i];
     });
@@ -854,10 +855,10 @@
   Porphyry.prototype._layoutNode = function (node, anchorX, y, dir) {
     const sp = this._sp;
     // anchorX is the closest-to-center edge; convert to center-x
-    node.x = dir === 'right'
+    node.x = Math.round(dir === 'right'
       ? anchorX + node.width / 2
-      : anchorX - node.width / 2;
-    node.y = y;
+      : anchorX - node.width / 2);
+    node.y = Math.round(y);
 
     if (!node.children.length || this._collapsed.has(node._id)) return;
 
@@ -1273,15 +1274,16 @@
     el.setAttribute('font-family', 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif');
     el.setAttribute('font-weight', weight || 'normal');
     el.setAttribute('pointer-events', 'none');
+    el.setAttribute('text-rendering', 'optimizeLegibility');
 
     const totalH = (lines.length - 1) * lineHeight;
     // y of the first baseline so the whole block is vertically centered around cy
-    const startY = cy - totalH / 2;
+    const startY = Math.round(cy - totalH / 2);
 
     lines.forEach((line, i) => {
       const tspan = document.createElementNS(NS, 'tspan');
-      tspan.setAttribute('x', cx);
-      tspan.setAttribute('y', startY + i * lineHeight);
+      tspan.setAttribute('x', Math.round(cx));
+      tspan.setAttribute('y', Math.round(startY + i * lineHeight));
       tspan.setAttribute('dominant-baseline', 'central');
       tspan.textContent = line;
       el.appendChild(tspan);
