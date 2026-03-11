@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.5.2-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+[![version](https://img.shields.io/badge/version-1.6.0-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
 
 ---
 
@@ -38,7 +38,7 @@ The fastest way to get started — no download or build step needed:
 <script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
 
 <!-- Pin to a specific version -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.5.2/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.0/porphyry.min.js"></script>
 ```
 
 ### Self-hosted
@@ -53,7 +53,7 @@ Download `porphyry.min.js` (or `porphyry.js` for the commented source) and inclu
 
 ```html
 <!-- Include from CDN -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.5.2/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.0/porphyry.min.js"></script>
 
 <!-- Give it a container with explicit dimensions -->
 <div id="map" style="width: 100%; height: 500px;"></div>
@@ -157,19 +157,32 @@ new Porphyry(selector, options)
 | Option | Default | Description |
 |---|---|---|
 | `center.fontSize` | `17` | Font size of the root node. |
+| `center.fontWeight` | `"700"` | Font weight of the root node. |
 | `center.paddingX / paddingY` | `28 / 16` | Inner padding of the root node. |
 | `center.maxWidth` | `240` | Max node width (px) before text wraps. |
-| `center.radius` | `12` | Corner radius of the root rectangle. |
-| `center.fill` | `"#1A1F2E"` | Root node background color. |
-| `center.color` | `"#FFFFFF"` | Root node text color. |
+| `center.radius` | `12` | Corner radius. `99` = pill (auto `height/2` for single-line). |
+| `center.bgColor` | `"#1A1F2E"` | Node background color. |
+| `center.border` | `false` | Border: `true` = full border, `'bottom'`/`'top'` = single edge, `false` = none. |
+| `center.borderColor` | `null` | Border color. `null` = use `bgColor`. |
+| `center.fontColor` | `"#FFFFFF"` | Text color. |
 | `branch.fontSize` | `14` | Font size of depth-1 nodes. |
+| `branch.fontWeight` | `"600"` | Font weight of depth-1 nodes. |
 | `branch.paddingX / paddingY` | `18 / 10` | Inner padding of depth-1 nodes. |
 | `branch.maxWidth` | `200` | Max width before text wraps. |
-| `branch.color` | `"#FFFFFF"` | Depth-1 text color (fill comes from the color palette). |
+| `branch.radius` | `99` | Corner radius. `99` = pill (auto `height/2` for single-line). |
+| `branch.bgColor` | `null` | Node background color. `null` = use color palette. |
+| `branch.border` | `false` | Border: `true` = full border, `'bottom'`/`'top'` = single edge, `false` = none. |
+| `branch.borderColor` | `null` | Border color. `null` = use palette color. |
+| `branch.fontColor` | `"#FFFFFF"` | Text color. |
 | `leaf.fontSize` | `13` | Font size of depth ≥ 2 nodes. |
+| `leaf.fontWeight` | `"500"` | Font weight of depth ≥ 2 nodes. |
 | `leaf.paddingX / paddingY` | `10 / 7` | Inner padding of leaf nodes. |
 | `leaf.maxWidth` | `170` | Max width before text wraps. |
-| `leaf.color` | `"#2D3748"` | Leaf node text color. |
+| `leaf.radius` | `3` | Corner radius. |
+| `leaf.bgColor` | `null` | Node background color. `null` = transparent (tinted by theme). |
+| `leaf.border` | `"bottom"` | Border: `true` = full border, `'bottom'`/`'top'` = single edge, `false` = none. |
+| `leaf.borderColor` | `null` | Border color. `null` = use palette color. |
+| `leaf.fontColor` | `"#2D3748"` | Text color. |
 
 ### Themes
 
@@ -232,6 +245,7 @@ All interactions are **off by default** for clean embedding. Opt in explicitly t
 | `maxZoom` | `4` | Maximum zoom scale. |
 | `zoomSensitivity` | `0.12` | Scroll-wheel zoom speed per tick. |
 | `showLinkIcons` | `true` | Whether to show the ↗ icon on `url` nodes and the ▶ icon on `onclick` nodes. Set to `false` to hide the icons while keeping click behaviour active. |
+| `fontColor` | `null` | Global text color override. When set, overrides `fontColor` on all node types. Accepts any CSS color string. `null` = use per-node-type defaults. |
 
 ---
 
