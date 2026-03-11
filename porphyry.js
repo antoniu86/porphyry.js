@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.6.0
+ * @version 1.6.1
  * @license MIT
  */
 (function (global) {
@@ -88,7 +88,7 @@
     leaf: {
       fontSize: 13,
       fontWeight: '500',
-      paddingX: 10,
+      paddingX: 14,
       paddingY: 7,
       radius: 3,
       maxWidth: 170,
@@ -541,13 +541,17 @@
    * @param {boolean} autoFit  Whether to fit the view after rendering.
    */
   Porphyry.prototype._renderInternal = function (autoFit) {
-    // Re-resolve options each render so theme defaults stay in sync with the
-    // active effective theme (classic+vertical auto-promotes to outline).
-    const rawTheme   = this._userOptions.theme || DEFAULT_OPTIONS.theme;
+    // Re-apply THEME_DEFAULTS for the active theme each render.
+    // Only the per-node-type visual sub-objects (center/branch/leaf) are refreshed
+    // so that direct runtime mutations to this.options (theme, layout, etc.) are preserved.
+    const rawTheme   = this.options.theme || DEFAULT_OPTIONS.theme;
     const rawLayout  = this.options.layout || 'auto';
     const isVertical = rawLayout === 'up' || rawLayout === 'down';
     const effTheme   = (rawTheme === 'classic' && isVertical) ? 'outline' : rawTheme;
-    this.options = merge(merge(DEFAULT_OPTIONS, THEME_DEFAULTS[effTheme] || {}), this._userOptions);
+    const td = THEME_DEFAULTS[effTheme] || {};
+    this.options.center = merge(merge(DEFAULT_OPTIONS.center, td.center || {}), this._userOptions.center || {});
+    this.options.branch = merge(merge(DEFAULT_OPTIONS.branch, td.branch || {}), this._userOptions.branch || {});
+    this.options.leaf   = merge(merge(DEFAULT_OPTIONS.leaf,   td.leaf   || {}), this._userOptions.leaf   || {});
 
     this.gEdges.innerHTML   = '';
     this.gNodes.innerHTML   = '';
@@ -738,15 +742,16 @@
 
   // ── Size Computation ───────────────────────────────────────────────────────
 
-  Porphyry.prototype._measureText = function (text, fontSize) {
-    const key = text + ':' + fontSize;
+  Porphyry.prototype._measureText = function (text, fontSize, fontWeight) {
+    const fw = fontWeight || '700';
+    const key = text + ':' + fontSize + ':' + fw;
     if (this._textCache[key]) return this._textCache[key];
 
     if (!this._measureCanvas) {
       this._measureCanvas = document.createElement('canvas');
       this._measureCtx = this._measureCanvas.getContext('2d');
     }
-    this._measureCtx.font = 'bold ' + fontSize + 'px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    this._measureCtx.font = fw + ' ' + fontSize + 'px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     const w = this._measureCtx.measureText(text).width;
     this._textCache[key] = w;
     return w;
@@ -755,21 +760,21 @@
   Porphyry.prototype._computeSizes = function (node) {
     const o = this.options;
     const wf = this._widthFactor || 1;
-    let fs, px, py, maxW;
+    let fs, fw, px, py, maxW;
 
     if (node.depth === 0) {
-      fs = o.center.fontSize; px = o.center.paddingX; py = o.center.paddingY; maxW = o.center.maxWidth * wf;
+      fs = o.center.fontSize; fw = o.center.fontWeight; px = o.center.paddingX; py = o.center.paddingY; maxW = o.center.maxWidth * wf;
     } else if (node.depth === 1) {
-      fs = o.branch.fontSize; px = o.branch.paddingX; py = o.branch.paddingY; maxW = o.branch.maxWidth * wf;
+      fs = o.branch.fontSize; fw = o.branch.fontWeight; px = o.branch.paddingX; py = o.branch.paddingY; maxW = o.branch.maxWidth * wf;
     } else {
-      fs = o.leaf.fontSize;   px = o.leaf.paddingX;   py = o.leaf.paddingY;   maxW = o.leaf.maxWidth   * wf;
+      fs = o.leaf.fontSize;   fw = o.leaf.fontWeight;   px = o.leaf.paddingX;   py = o.leaf.paddingY;   maxW = o.leaf.maxWidth   * wf;
     }
 
     const iconExtra = (node.url || node.onclick) && o.showLinkIcons ? LINK_ICON_SPACE : 0;
     // The content area width available for text (inside padding, minus icon)
     const maxContentW = maxW - px * 2 - iconExtra;
 
-    const measure = (t) => this._measureText(t, fs);
+    const measure = (t) => this._measureText(t, fs, fw);
     const lines = wrapText(node.topic, maxContentW, measure);
 
     // Actual width = widest line + padding + icon, capped at maxW
@@ -1006,7 +1011,7 @@
       } else if (theme === 'classic') {
         // ── Classic: solid pill for depth 1, transparent+underline for depth 2+ ──
         if (node.depth === 1) {
-          const rx = o.branch.radius >= 99 ? (node.lines.length === 1 ? node.height / 2 : 10) : o.branch.radius;
+          const rx = o.branch.radius >= 99 ? node.height / 2 : o.branch.radius;
           const bgFill = o.branch.bgColor !== null ? o.branch.bgColor : color;
           const rect = svgEl('rect', {
             x: node.x - node.width / 2, y: node.y - node.height / 2,
@@ -1064,15 +1069,17 @@
       } else {
         // ── Underline / Baseline: optional transparent bg + edge border ──
         const nodeOpts  = node.depth === 0 ? o.center : node.depth === 1 ? o.branch : o.leaf;
-        const tintColor = nodeOpts.bgColor !== null ? nodeOpts.bgColor : color;
-        if (theme === 'underline') {
+        const bgFill    = nodeOpts.bgColor !== null ? nodeOpts.bgColor : color;
+        const lineColor = nodeOpts.borderColor || color; // always fall back to palette color
+        const showBg    = theme === 'underline' && bgFill !== 'transparent' && bgFill !== 'none';
+        if (showBg) {
           g.appendChild(svgEl('rect', {
             x: node.x - node.width / 2, y: node.y - node.height / 2,
             width: node.width, height: node.height,
-            rx: 3, ry: 3, fill: tintColor, opacity: '0.10',
+            rx: 3, ry: 3, fill: bgFill, opacity: '0.10',
           }));
         } else {
-          // baseline: invisible hit-area rect so click events register
+          // baseline or no-bg: invisible hit-area rect so click events register
           g.appendChild(svgEl('rect', {
             x: node.x - node.width / 2, y: node.y - node.height / 2,
             width: node.width, height: node.height,
@@ -1080,17 +1087,16 @@
           }));
         }
         if (nodeOpts.border === 'bottom' || nodeOpts.border === true) {
-          const lineColor = nodeOpts.borderColor || tintColor;
           g.appendChild(svgEl('line', {
             x1: node.x - node.width / 2, y1: node.y + node.height / 2,
             x2: node.x + node.width / 2, y2: node.y + node.height / 2,
             stroke: lineColor, 'stroke-width': node.depth === 0 ? '2.5' : '1.8', 'stroke-linecap': 'round',
           }));
         }
-        const ulText = o.fontColor || nodeOpts.fontColor || tintColor;
+        const ulText = o.fontColor || nodeOpts.fontColor || lineColor;
         g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, ulText, fontWeight));
-        if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, tintColor));
-        if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, tintColor));
+        if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, lineColor));
+        if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, lineColor));
       }
 
     // ── Themed styles (apply to all nodes, both vertical and horizontal) ──
@@ -1118,9 +1124,7 @@
       const strokeCol = hasBorder ? (nodeOpts.borderColor || color) : 'none';
       const strokeW   = node.depth === 0 ? '2.5' : '2';
       const textColor = o.fontColor || nodeOpts.fontColor || color;
-      const rx        = nodeOpts.radius >= 99
-                      ? (node.lines.length === 1 ? node.height / 2 : 10)
-                      : nodeOpts.radius;
+      const rx        = nodeOpts.radius >= 99 ? node.height / 2 : nodeOpts.radius;
       const filter    = node.depth === 0 ? 'url(#mm-shadow-center)'
                       : node.depth === 1 ? 'url(#mm-shadow-branch)' : '';
 

@@ -94,7 +94,7 @@
         <line x1="17" y1="11" x2="20" y2="8" stroke="#D4A017" stroke-width="1.2" stroke-linecap="round"/>
       </svg>
       Porphyry.js
-      <span class="badge">v1.6.0</span>
+      <span class="badge">v1.6.1</span>
     </h1>
     <nav class="tab-nav">
       <button class="tab-btn active" data-tab="demo">Demo</button>
@@ -237,7 +237,7 @@
         <h2>Porphyry.js</h2>
         <p>A lightweight, zero-dependency JavaScript library for rendering interactive mind maps as SVG. Named after Porphyry of Tyre, the ancient philosopher who introduced the hierarchical <em>tree of categories</em>.</p>
         <div class="docs-hero-badge">
-          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.6.0</span>
+          <span style="background:#EBF4FF;padding:2px 8px;border-radius:99px">v1.6.1</span>
           <span style="background:#F0FFF4;color:#276749;padding:2px 8px;border-radius:99px">Zero dependencies</span>
           <span style="background:#FAF5FF;color:#553C9A;padding:2px 8px;border-radius:99px">SVG-based</span>
           <span style="background:#FFFBEB;color:#92400E;padding:2px 8px;border-radius:99px">MIT license</span>
@@ -257,13 +257,13 @@
 <span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Pin to a specific version --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.0/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.1/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Self-hosted</h3>
       <p>Download <code>porphyry.min.js</code> (or <code>porphyry.js</code> for the commented source) and include it directly:</p>
 <pre><span class="kw">&lt;script</span> src=<span class="st">"porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span></pre>
       <h3>Example</h3>
 <pre><span class="cm">&lt;!-- Include from CDN --&gt;</span>
-<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.0/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+<span class="kw">&lt;script</span> src=<span class="st">"https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.1/porphyry.min.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
 
 <span class="cm">&lt;!-- Give it a container --&gt;</span>
 <span class="kw">&lt;div</span> id=<span class="st">"map"</span> style=<span class="st">"width:100%;height:500px"</span><span class="kw">&gt;&lt;/div&gt;</span>
@@ -368,6 +368,7 @@
         <tr><td>center.border</td><td>false</td><td>Border style: true = full border, 'bottom'/'top' = single edge, false = none.</td></tr>
         <tr><td>center.borderColor</td><td>null</td><td>Border color. null = use bgColor.</td></tr>
         <tr><td>center.fontColor</td><td>"#FFFFFF"</td><td>Text color.</td></tr>
+        <tr><td>center.shadowColor</td><td>"rgba(0,0,0,0.35)"</td><td>Drop shadow color.</td></tr>
       </table>
 
       <h3>Branch nodes (depth 1)</h3>
@@ -382,6 +383,7 @@
         <tr><td>branch.border</td><td>false</td><td>Border style: true = full border, 'bottom'/'top' = single edge, false = none.</td></tr>
         <tr><td>branch.borderColor</td><td>null</td><td>Border color. null = use palette color.</td></tr>
         <tr><td>branch.fontColor</td><td>"#FFFFFF"</td><td>Text color.</td></tr>
+        <tr><td>branch.shadowColor</td><td>null</td><td>Drop shadow color. null = no shadow.</td></tr>
       </table>
 
       <h3>Leaf nodes (depth ≥ 2)</h3>
@@ -389,10 +391,10 @@
         <tr><th>Option</th><th>Default</th><th>Description</th></tr>
         <tr><td>leaf.fontSize</td><td>13</td><td></td></tr>
         <tr><td>leaf.fontWeight</td><td>"500"</td><td></td></tr>
-        <tr><td>leaf.paddingX / paddingY</td><td>10 / 7</td><td></td></tr>
+        <tr><td>leaf.paddingX / paddingY</td><td>14 / 7</td><td></td></tr>
         <tr><td>leaf.maxWidth</td><td>170</td><td>Max node width (px) before text wraps.</td></tr>
         <tr><td>leaf.radius</td><td>3</td><td>Corner radius.</td></tr>
-        <tr><td>leaf.bgColor</td><td>null</td><td>Node background color. null = transparent (tinted by theme).</td></tr>
+        <tr><td>leaf.bgColor</td><td>null</td><td>Node background color. null = use palette color (tinted at low opacity in classic/underline). Set to 'transparent' or 'none' to remove the background entirely while keeping any border.</td></tr>
         <tr><td>leaf.border</td><td>"bottom"</td><td>Border style: true = full border, 'bottom'/'top' = single edge, false = none.</td></tr>
         <tr><td>leaf.borderColor</td><td>null</td><td>Border color. null = use palette color.</td></tr>
         <tr><td>leaf.fontColor</td><td>"#2D3748"</td><td>Text color.</td></tr>
@@ -423,6 +425,7 @@
         <tr><td>zoomSensitivity</td><td>0.12</td><td>Scroll-wheel zoom speed per tick.</td></tr>
         <tr><td>showLinkIcons</td><td>true</td><td>Whether to show the ↗ icon on <code>url</code> nodes and the ▶ icon on <code>onclick</code> nodes. Set to <code>false</code> to hide the icons while keeping click behaviour active.</td></tr>
         <tr><td>fontColor</td><td>null</td><td>Global text color override. When set, overrides <code>fontColor</code> on all node types. Accepts any CSS color string. null = use per-node-type defaults.</td></tr>
+        <tr><td>animationDuration</td><td>350</td><td>Duration (ms) of the render fade-in animation. Set to 0 to disable.</td></tr>
       </table>
     </div>
 
