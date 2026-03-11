@@ -4,7 +4,7 @@ A lightweight, zero-dependency JavaScript library for rendering interactive mind
 
 Named after [Porphyry of Tyre](https://en.wikipedia.org/wiki/Porphyry_(philosopher)), the ancient philosopher who introduced the *Isagoge* — a hierarchical tree of categories that became one of the most influential diagrams in the history of logic.
 
-[![version](https://img.shields.io/badge/version-1.6.1-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
+[![version](https://img.shields.io/badge/version-1.6.2-blue)](#) [![zero dependencies](https://img.shields.io/badge/dependencies-none-brightgreen)](#) [![license](https://img.shields.io/badge/license-MIT-purple)](#)
 
 ---
 
@@ -38,7 +38,7 @@ The fastest way to get started — no download or build step needed:
 <script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@latest/porphyry.min.js"></script>
 
 <!-- Pin to a specific version -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.1/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.2/porphyry.min.js"></script>
 ```
 
 ### Self-hosted
@@ -53,7 +53,7 @@ Download `porphyry.min.js` (or `porphyry.js` for the commented source) and inclu
 
 ```html
 <!-- Include from CDN -->
-<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.1/porphyry.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/antoniu86/porphyry.js@v1.6.2/porphyry.min.js"></script>
 
 <!-- Give it a container with explicit dimensions -->
 <div id="map" style="width: 100%; height: 500px;"></div>
@@ -162,7 +162,7 @@ new Porphyry(selector, options)
 | `center.maxWidth` | `240` | Max node width (px) before text wraps. |
 | `center.radius` | `12` | Corner radius. `99` = pill (auto `height/2` for single-line). |
 | `center.bgColor` | `"#1A1F2E"` | Node background color. |
-| `center.border` | `false` | Border: `true` = full border, `'bottom'`/`'top'` = single edge, `false` = none. |
+| `center.border` | `false` | Border style. `false` = none. `true` or `'around'` = full rect border. `'bottom'`/`'top'`/`'left'`/`'right'` = single edge. Space-separated for multiple edges: `'top bottom'`. Overrides the theme default when set. |
 | `center.borderColor` | `null` | Border color. `null` = use `bgColor`. |
 | `center.fontColor` | `"#FFFFFF"` | Text color. |
 | `center.shadowColor` | `"rgba(0,0,0,0.35)"` | Drop shadow color. |
@@ -172,7 +172,7 @@ new Porphyry(selector, options)
 | `branch.maxWidth` | `200` | Max width before text wraps. |
 | `branch.radius` | `99` | Corner radius. `99` = pill (auto `height/2` for single-line). |
 | `branch.bgColor` | `null` | Node background color. `null` = use color palette. |
-| `branch.border` | `false` | Border: `true` = full border, `'bottom'`/`'top'` = single edge, `false` = none. |
+| `branch.border` | `false` | Border style. `false` = none. `true` or `'around'` = full rect border. `'bottom'`/`'top'`/`'left'`/`'right'` = single edge. Space-separated for multiple edges: `'top bottom'`. Overrides the theme default when set. |
 | `branch.borderColor` | `null` | Border color. `null` = use palette color. |
 | `branch.fontColor` | `"#FFFFFF"` | Text color. |
 | `branch.shadowColor` | `null` | Drop shadow color. `null` = no shadow. |
@@ -182,7 +182,7 @@ new Porphyry(selector, options)
 | `leaf.maxWidth` | `170` | Max width before text wraps. |
 | `leaf.radius` | `3` | Corner radius. |
 | `leaf.bgColor` | `null` | Node background color. `null` = use palette color (tinted at low opacity in classic/underline). Set to `'transparent'` or `'none'` to remove the background entirely while keeping any border. |
-| `leaf.border` | `"bottom"` | Border: `true` = full border, `'bottom'`/`'top'` = single edge, `false` = none. |
+| `leaf.border` | `"bottom"` | Border style. `false` = none. `true` or `'around'` = full rect border. `'bottom'`/`'top'`/`'left'`/`'right'` = single edge. Space-separated for multiple edges: `'top bottom'`. Overrides the theme default when set. |
 | `leaf.borderColor` | `null` | Border color. `null` = use palette color. |
 | `leaf.fontColor` | `"#2D3748"` | Text color. |
 

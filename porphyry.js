@@ -1,7 +1,7 @@
 /**
  * Porphyry.js — A lightweight, zero-dependency mind map library
  * Renders interactive SVG mind maps from JSON data
- * @version 1.6.1
+ * @version 1.6.2
  * @license MIT
  */
 (function (global) {
@@ -777,7 +777,9 @@
     const measure = (t) => this._measureText(t, fs, fw);
     const lines = wrapText(node.topic, maxContentW, measure);
 
-    // Actual width = widest line + padding + icon, capped at maxW
+    // Actual width = widest line + padding + icon, capped at maxW.
+    // Add a 4px buffer to guard against Canvas measurement underestimating
+    // actual SVG render width, which would eat into visual padding.
     const maxLineW = lines.reduce((m, l) => Math.max(m, measure(l)), 0);
     const lh = fs * o.lineHeight;
 
@@ -786,7 +788,7 @@
     node.paddingX   = px;
     node.paddingY   = py;
     node.lines      = lines;                                          // ← new
-    node.width      = Math.ceil(Math.min(maxLineW + px * 2 + iconExtra, maxW));
+    node.width      = Math.ceil(Math.min(maxLineW + 4 + px * 2 + iconExtra, maxW));
     node.height     = Math.ceil(lines.length * lh + py * 2);
 
     node.children.forEach(c => this._computeSizes(c));
@@ -956,6 +958,30 @@
 
   // ── Drawing ────────────────────────────────────────────────────────────────
 
+  /**
+   * Draw border for a node onto group g.
+   * border: false/null = none; true/'around' = full rect; 'bottom'/'top'/'left'/'right' or
+   * space-separated combinations like 'top bottom' = individual edge lines.
+   * color: already-resolved border color. sw: stroke-width string.
+   */
+  Porphyry.prototype._drawBorder = function (g, border, node, color, sw) {
+    if (!border) return;
+    var x1 = node.x - node.width / 2, x2 = node.x + node.width / 2;
+    var yt = node.y - node.height / 2, yb = node.y + node.height / 2;
+    if (border === true || border === 'around') {
+      g.appendChild(svgEl('rect', {
+        x: x1, y: yt, width: node.width, height: node.height,
+        rx: 3, ry: 3, fill: 'none', stroke: color, 'stroke-width': sw,
+      }));
+      return;
+    }
+    var edges = String(border).split(/\s+/);
+    if (edges.indexOf('bottom') >= 0) g.appendChild(svgEl('line', { x1: x1, y1: yb, x2: x2, y2: yb, stroke: color, 'stroke-width': sw, 'stroke-linecap': 'round' }));
+    if (edges.indexOf('top')    >= 0) g.appendChild(svgEl('line', { x1: x1, y1: yt, x2: x2, y2: yt, stroke: color, 'stroke-width': sw, 'stroke-linecap': 'round' }));
+    if (edges.indexOf('left')   >= 0) g.appendChild(svgEl('line', { x1: x1, y1: yt, x2: x1, y2: yb, stroke: color, 'stroke-width': sw, 'stroke-linecap': 'round' }));
+    if (edges.indexOf('right')  >= 0) g.appendChild(svgEl('line', { x1: x2, y1: yt, x2: x2, y2: yb, stroke: color, 'stroke-width': sw, 'stroke-linecap': 'round' }));
+  };
+
   Porphyry.prototype._drawTree = function (root) {
     this._drawNode(root);
     this._drawSubtree(root);
@@ -1038,14 +1064,7 @@
               rx: leafRx, ry: leafRx, fill: color, opacity: hasLink ? '0.14' : '0.08',
             }));
           }
-          if (o.leaf.border === 'bottom' || o.leaf.border === true) {
-            const lineColor = o.leaf.borderColor || color;
-            g.appendChild(svgEl('line', {
-              x1: node.x - node.width / 2, y1: node.y + node.height / 2,
-              x2: node.x + node.width / 2, y2: node.y + node.height / 2,
-              stroke: lineColor, 'stroke-width': '1.8', 'stroke-linecap': 'round',
-            }));
-          }
+          this._drawBorder(g, o.leaf.border, node, o.leaf.borderColor || color, '1.8');
           g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, o.fontColor || o.leaf.fontColor, o.leaf.fontWeight));
           const leafIconColor = o.leaf.borderColor || color;
           if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, leafIconColor));
@@ -1086,13 +1105,7 @@
             fill: 'transparent',
           }));
         }
-        if (nodeOpts.border === 'bottom' || nodeOpts.border === true) {
-          g.appendChild(svgEl('line', {
-            x1: node.x - node.width / 2, y1: node.y + node.height / 2,
-            x2: node.x + node.width / 2, y2: node.y + node.height / 2,
-            stroke: lineColor, 'stroke-width': node.depth === 0 ? '2.5' : '1.8', 'stroke-linecap': 'round',
-          }));
-        }
+        this._drawBorder(g, nodeOpts.border, node, lineColor, node.depth === 0 ? '2.5' : '1.8');
         const ulText = o.fontColor || nodeOpts.fontColor || lineColor;
         g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, ulText, fontWeight));
         if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, lineColor));
@@ -1120,9 +1133,9 @@
       // Visual properties are fully driven by per-node-type options (set by THEME_DEFAULTS).
       const nodeOpts  = node.depth === 0 ? o.center : node.depth === 1 ? o.branch : o.leaf;
       const bgFill    = nodeOpts.bgColor !== null ? nodeOpts.bgColor : color;
-      const hasBorder = nodeOpts.border === true;
-      const strokeCol = hasBorder ? (nodeOpts.borderColor || color) : 'none';
+      const isAround  = nodeOpts.border === true || nodeOpts.border === 'around';
       const strokeW   = node.depth === 0 ? '2.5' : '2';
+      const strokeCol = isAround ? (nodeOpts.borderColor || color) : 'none';
       const textColor = o.fontColor || nodeOpts.fontColor || color;
       const rx        = nodeOpts.radius >= 99 ? node.height / 2 : nodeOpts.radius;
       const filter    = node.depth === 0 ? 'url(#mm-shadow-center)'
@@ -1136,8 +1149,11 @@
       });
       if (filter) rect.setAttribute('filter', filter);
       g.appendChild(rect);
+      if (!isAround && nodeOpts.border) {
+        this._drawBorder(g, nodeOpts.border, node, nodeOpts.borderColor || color, strokeW);
+      }
       g.appendChild(this._makeText(node.lines, textX, node.y, node.fontSize, node.lineHeight, textColor, fontWeight));
-      const iconColor = hasBorder ? (nodeOpts.borderColor || color) : textColor;
+      const iconColor = nodeOpts.border ? (nodeOpts.borderColor || color) : textColor;
       if (hasLink    && o.showLinkIcons) g.appendChild(this._makeLinkIcon(node, iconColor));
       if (hasOnclick && o.showLinkIcons) g.appendChild(this._makeOnclickIcon(node, iconColor));
     }
